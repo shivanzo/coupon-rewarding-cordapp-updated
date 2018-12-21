@@ -70,8 +70,13 @@ public class CouponContract implements Contract {
             req.using("input must be of the type CouponState ", input instanceof CouponState);
             req.using("Output must be of the type CouponState ", output instanceof CouponState);
 
+
+
+
             CouponState inputState = (CouponState) input;
             CouponState outputState = (CouponState) output;
+
+           // req.using("Amount is more than granted for coupon ", outputState.getAmount() > inputState.getAmount());
 
             PublicKey netmedsKey = inputState.getInitiatingParty().getOwningKey();
             PublicKey amazonkey = outputState.getCounterParty().getOwningKey();

@@ -19,14 +19,16 @@ public class CouponState implements LinearState {
    private int amount;
    private boolean isCouponUtilized;
    private UniqueIdentifier couponId;
+   private boolean isCouponApproved;
 
    @ConstructorForDeserialization
-   public CouponState(Party initiatingParty, Party counterParty, int amount, UniqueIdentifier couponId, boolean isCouponUtilized) {
+   public CouponState(Party initiatingParty, Party counterParty, int amount, UniqueIdentifier couponId, boolean isCouponUtilized, boolean isCouponApproved) {
        this.initiatingParty = initiatingParty;
        this.counterParty = counterParty;
        this.amount = amount;
        this.couponId = couponId;
        this.isCouponUtilized = isCouponUtilized;
+       this.isCouponApproved = isCouponApproved;
    }
 
     public Party getInitiatingParty() {
@@ -55,6 +57,18 @@ public class CouponState implements LinearState {
 
     public void setCouponUtilized(boolean couponUtilized) {
         isCouponUtilized = couponUtilized;
+    }
+
+    public boolean isCouponApproved() {
+        return isCouponApproved;
+    }
+
+    public void setCouponApproved(boolean couponApproved) {
+        isCouponApproved = couponApproved;
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
     }
 
     @NotNull

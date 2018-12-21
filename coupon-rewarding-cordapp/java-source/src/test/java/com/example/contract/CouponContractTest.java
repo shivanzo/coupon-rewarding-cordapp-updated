@@ -19,7 +19,7 @@ public class CouponContractTest {
 
     private static int amount = 20000;
 
-    private static CouponState couponState = new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(), false);
+    private static CouponState couponState = new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(), false, true);
 
     @Test
     public void transactionMustIncludeCreateCommand() {
@@ -80,7 +80,7 @@ public class CouponContractTest {
     public void lenderMustSignTransaction() {
 
         transaction(ledgerServices,tx -> {
-            tx.output(COUPON_CONTRACT_ID, new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(),false));
+            tx.output(COUPON_CONTRACT_ID, new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(),false, true));
             tx.command(ImmutableList.of(netmeds.getPublicKey(),amazon.getPublicKey()), new CouponContract.Commands.CouponGeneration());
             tx.verifies();
             return null;
@@ -99,7 +99,7 @@ public class CouponContractTest {
     public void borrowerMustSignTransaction() {
 
         transaction(ledgerServices,tx -> {
-            tx.output(COUPON_CONTRACT_ID, new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(),false));
+            tx.output(COUPON_CONTRACT_ID, new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(),false, true));
             tx.command(ImmutableList.of(netmeds.getPublicKey(),amazon.getPublicKey()), new CouponContract.Commands.CouponGeneration());
             tx.verifies();
             return null;
@@ -117,7 +117,7 @@ public class CouponContractTest {
     public void lenderIsNotBorrower() {
 
         transaction(ledgerServices,tx -> {
-            tx.output(COUPON_CONTRACT_ID, new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(),false));
+            tx.output(COUPON_CONTRACT_ID, new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(),false, true));
             tx.command(ImmutableList.of(netmeds.getPublicKey(),amazon.getPublicKey()), new CouponContract.Commands.CouponGeneration());
             tx.verifies();
             return null;

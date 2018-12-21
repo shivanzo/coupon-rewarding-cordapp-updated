@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Hello</title>
+    <!--<link rel=StyleSheet href="default.css" TYPE="text/css">-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+         function genCoupon() {
+
+             xmlHttpReq = new XMLHttpRequest();
+             xmlHttpReq.open("POST", "http://localhost:10009/api/rewards/coupon-generations/", true);
+             xmlHttpReq.onreadystatechange = displayResponse;
+             xmlHttpReq.setRequestHeader("Content-Type", "application/json");
+             var amount = document.getElementById("amt").value;
+             var data = JSON.stringify({"partyName": "O=Amazon, L=New York, C=US", "value": amount});
+             xmlHttpReq.send(data);
+         }
+
+         function displayResponse() {
+
+         if(xmlHttpReq.readyState == 4  ) {
+         document.getElementById("result").innerHTML = xmlHttpReq.responseText;
+         }
+
+         }
+
+
+      </script>
+    <style>
+        body {
+  background-color: grey;
+}
+    </style>
+</head>
+<!--<body background="simple.jpg">-->
+<body>
+<div class="bg">
+    <center>
+        <h1>Welcome To Netmeds.com </h1>
+        <br/>
+        <table>
+            <tr>
+                <td><label class="badge">Coupon Amount</label></td>
+                <td><input type ="text" class="form-control input-sm" name="amt" id ="amt" placeholder="Enter Amount"></td>
+            </tr>
+        </table>
+        <br/>
+        <input type ="button" class="btn btn-info" data-toggle="collapse" data-target="#result" name = "coupon" id ="coupon" value = "Generate coupon" onclick ="genCoupon();">
+    </center>
+</div>
+<br/>
+<br/>
+<center>
+    <div id="result" class="collapse" style="background-color:white"></div>
+</center>
+
+</body>
+</html>

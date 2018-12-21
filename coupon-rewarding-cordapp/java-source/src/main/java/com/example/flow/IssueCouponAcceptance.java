@@ -23,7 +23,7 @@ import static net.corda.core.contracts.ContractsDSL.requireThat;
 
 import java.util.List;
 
-public class CouponVerificationFlow {
+public class IssueCouponAcceptance {
 
     @InitiatingFlow
     @StartableByRPC
@@ -33,10 +33,13 @@ public class CouponVerificationFlow {
         private boolean isCouponUtilized;
         UniqueIdentifier coupounId;
         private int amount;
+        private boolean isCouponApproved;
+        private int grantedAmount;
 
-        public Initiator(Party netMedsParty, UniqueIdentifier couponId) {
+        public Initiator(Party netMedsParty, UniqueIdentifier couponId, int amount) {
             this.netMedsParty = netMedsParty;
             this.coupounId = couponId;
+            this.amount = amount;
         }
 
         public Party getNetMedsParty() {
@@ -61,6 +64,26 @@ public class CouponVerificationFlow {
 
         public void setAmount(int amount) {
             this.amount = amount;
+        }
+
+        public void setCoupounId(UniqueIdentifier coupounId) {
+            this.coupounId = coupounId;
+        }
+
+        public boolean isCouponApproved() {
+            return isCouponApproved;
+        }
+
+        public void setCouponApproved(boolean couponApproved) {
+            isCouponApproved = couponApproved;
+        }
+
+        public int getGrantedAmount() {
+            return grantedAmount;
+        }
+
+        public void setGrantedAmount(int grantedAmount) {
+            this.grantedAmount = grantedAmount;
         }
 
         private final ProgressTracker.Step VERIFYING_TRANSACTION = new ProgressTracker.Step("Verifying contract constraints.");
@@ -89,7 +112,6 @@ public class CouponVerificationFlow {
         public SignedTransaction call() throws FlowException {
 
             CouponState couponState = null;
-            int amount;
             final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
             Party amazonParty = getServiceHub().getMyInfo().getLegalIdentities().get(0);
             StateAndRef<CouponState> inputState = null;
@@ -108,9 +130,15 @@ public class CouponVerificationFlow {
             }
 
             inputState = inputStateList.get(0);
-            amount = inputStateList.get(0).getState().getData().getAmount();
+            grantedAmount = inputStateList.get(0).getState().getData().getAmount();
 
-            couponState = new CouponState(netMedsParty, amazonParty, amount, coupounId, true);
+            if (amount > grantedAmount) {
+                throw new FlowException("########## Amount exceeded the value : " + grantedAmount + " " + amount );
+            }
+
+            amount = calculateDifference(amount, grantedAmount);
+
+            couponState = new CouponState(netMedsParty, amazonParty, amount, coupounId, false, true);
 
             progressTracker.setCurrentStep(VERIFYING_COUPON);
 
@@ -141,6 +169,11 @@ public class CouponVerificationFlow {
             //Notarise and record the transaction in both party vaults.
             return subFlow(new FinalityFlow(fullySignedTx));
 
+        }
+
+        private int calculateDifference(int amount, int grantedAmount) {
+
+            return (grantedAmount - amount);
         }
     }
 
