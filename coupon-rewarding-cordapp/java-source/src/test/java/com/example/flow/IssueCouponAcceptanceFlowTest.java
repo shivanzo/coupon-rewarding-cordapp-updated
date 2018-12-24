@@ -1,4 +1,4 @@
-/*
+
 package com.example.flow;
 
 import com.example.state.CouponState;
@@ -18,7 +18,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class IssueCouponAcceptanceTest {
+public class IssueCouponAcceptanceFlowTest {
 
     private MockNetwork network;
     private StartedMockNode nodeA;
@@ -42,10 +42,9 @@ public class IssueCouponAcceptanceTest {
     public final ExpectedException exception = ExpectedException.none();
 
     @Test
-    public void recordedTransactionHasNoInputsAndASingleOutputTheInputIOU() throws Exception {
-        //IssueCouponRequestFlow.Initiator flow =  new IssueCouponRequestFlow.Initiator(nodeB.getInfo().getLegalIdentities().get(0), amount);
+    public void recordedTransactionHasOneInputsAndASingleOutputTheInputIOU() throws Exception {
 
-        IssueCouponAcceptance.Initiator flow = new IssueCouponAcceptance.Initiator(nodeA.getInfo().getLegalIdentities().get(0), new UniqueIdentifier());
+        IssueCouponAcceptanceFlow.Initiator flow = new IssueCouponAcceptanceFlow.Initiator( new UniqueIdentifier());
         CordaFuture<SignedTransaction> future = nodeB.startFlow(flow);
         network.runNetwork();
         SignedTransaction signedTx = future.get();
@@ -68,8 +67,5 @@ public class IssueCouponAcceptanceTest {
     public void tearDown() {
         network.stopNodes();
     }
-
-
-
 }
-*/
+

@@ -28,18 +28,24 @@ public class CouponRedemptionFlow {
     @StartableByRPC
     public static class Initiator extends FlowLogic<SignedTransaction> {
 
-        private final Party netmedsParty;
+        private Party couponIssuerParty;
         private boolean isCouponUtilized;
         UniqueIdentifier coupounId;
         private int amount;
+        private int grantedAmount;
+        private String userName;
+        private String enteredUserName;
 
-        public Initiator(Party netmedsParty, UniqueIdentifier coupounId) {
-            this.netmedsParty = netmedsParty;
+        public Initiator(UniqueIdentifier coupounId, int amount, String enteredUserName) {
             this.coupounId = coupounId;
+            this.amount = amount;
+            this.enteredUserName = enteredUserName;
+
+            System.out.println(" ####### I am Here : " + enteredUserName);
         }
 
-        public Party getNetmedsParty() {
-            return netmedsParty;
+        public Party getCouponIssuerParty() {
+            return couponIssuerParty;
         }
 
         public boolean isCouponUtilized() {
@@ -66,6 +72,29 @@ public class CouponRedemptionFlow {
             this.amount = amount;
         }
 
+        public int getGrantedAmount() {
+            return grantedAmount;
+        }
+        public void setGrantedAmount(int grantedAmount) {
+            this.grantedAmount = grantedAmount;
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public void setUserName(String userName) {
+            this.userName = userName;
+        }
+
+        public String getEnteredUserName() {
+            return enteredUserName;
+        }
+
+        public void setEnteredUserName(String enteredUserName) {
+            this.enteredUserName = enteredUserName;
+        }
+
         private final ProgressTracker.Step VERIFYING_TRANSACTION = new ProgressTracker.Step("Verifying contract constraints.");
         private final ProgressTracker.Step VERIFYING_COUPON = new ProgressTracker.Step("Response from credit rating agency about loan eligibility and approval");
         private final ProgressTracker.Step SIGNING_TRANSACTION = new ProgressTracker.Step("Signing transaction with our private key.");
@@ -88,20 +117,19 @@ public class CouponRedemptionFlow {
         );
 
 
-
         @Override
         @Suspendable
         public SignedTransaction call() throws FlowException {
 
             CouponState couponState = null;
             final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
-            Party amazon = getServiceHub().getMyInfo().getLegalIdentities().get(0);
+            Party vendorParty = getServiceHub().getMyInfo().getLegalIdentities().get(0);
             StateAndRef<CouponState> inputState = null;
 
             QueryCriteria criteriaCouponState = new QueryCriteria.LinearStateQueryCriteria(
                     null,
                     ImmutableList.of(coupounId),
-                    Vault.StateStatus.CONSUMED,
+                    Vault.StateStatus.UNCONSUMED,
                     null
             );
 
@@ -111,11 +139,25 @@ public class CouponRedemptionFlow {
             }
 
             inputState = inputStateList.get(0);
-            couponState = new CouponState(netmedsParty, amazon, amount, coupounId, true, true);
+            grantedAmount = inputStateList.get(0).getState().getData().getAmount();
+            userName = inputStateList.get(0).getState().getData().getUsername();
+            couponIssuerParty = inputStateList.get(0).getState().getData().getInitiatingParty();
+
+            if (amount > grantedAmount) {
+                throw new FlowException("########## Amount exceeded the value : " + grantedAmount + " " + amount );
+            }
+
+            if ((enteredUserName == null) || (!enteredUserName.equalsIgnoreCase(userName)) || "".equalsIgnoreCase(enteredUserName)) {
+                throw new FlowException("######### This user is not eligible for the couple..");
+            }
+
+            amount = calculateDifference(amount, grantedAmount);
+
+            couponState = new CouponState(couponIssuerParty, vendorParty, amount, coupounId, true, true, userName);
 
             progressTracker.setCurrentStep(VERIFYING_COUPON);
 
-            final Command<CouponContract.Commands.CouponVerification> couponVerificationCommand = new Command<CouponContract.Commands.CouponVerification>(new CouponContract.Commands.CouponVerification(), ImmutableList.of(couponState.getInitiatingParty().getOwningKey(), couponState.getCounterParty().getOwningKey()));
+            final Command<CouponContract.Commands.CouponRedemption> couponVerificationCommand = new Command<CouponContract.Commands.CouponRedemption>(new CouponContract.Commands.CouponRedemption(), ImmutableList.of(couponState.getInitiatingParty().getOwningKey(), couponState.getCounterParty().getOwningKey()));
 
             final TransactionBuilder txBuilder = new TransactionBuilder(notary)
                     .addInputState(inputState)
@@ -132,13 +174,18 @@ public class CouponRedemptionFlow {
 
             progressTracker.setCurrentStep(GATHERING_SIGS);
 
-            FlowSession otherPartySession = initiateFlow(netmedsParty);
+            FlowSession otherPartySession = initiateFlow(couponIssuerParty);
 
             final SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, ImmutableSet.of(otherPartySession), CollectSignaturesFlow.Companion.tracker()));
 
             progressTracker.setCurrentStep(FINALISING_TRANSACTION);
 
             return subFlow(new FinalityFlow(fullySignedTx));
+        }
+
+        private int calculateDifference(int amount, int grantedAmount) {
+
+            return (grantedAmount - amount);
         }
     }
 

@@ -29,35 +29,40 @@ public class CouponContract implements Contract {
         CommandData commandType = command.getValue();
 
         if (commandType instanceof  Commands.CouponGeneration) {
-            verifyCouponGeneration(tx, requiredSigners);
+            verifyCouponIssuance(tx, requiredSigners);
         } else if (commandType instanceof Commands.CouponVerification) {
-            verifyCouponUsage(tx, requiredSigners);
+            verifyCouponAcceptance(tx, requiredSigners);
+        } else if (commandType instanceof Commands.CouponRedemption) {
+            verifyCouponRedemption(tx, requiredSigners);
         }
     }
 
-    private void verifyCouponGeneration(LedgerTransaction tx, List<PublicKey> signers) {
+    private void verifyCouponIssuance(LedgerTransaction tx, List<PublicKey> signers) {
         requireThat(req -> {
 
             req.using("No inputs should be consumed while generating a coupon", tx.getInputStates().isEmpty());
             req.using("Only one output should be created during the process of generating coupon", tx.getOutputStates().size() == 1);
 
             ContractState outputState = tx.getOutput(0);
-            req.using("Output must be of the tyep CouponState ", outputState instanceof CouponState);
+            req.using("Output must be of the type CouponState ", outputState instanceof CouponState);
             CouponState couponState = (CouponState) outputState;
-            req.using("Purchasing amount should be more than or equal to 20000", couponState.getAmount() >= 2000);
 
-            Party netmeds =  couponState.getInitiatingParty();
-            PublicKey netmedsKey  = netmeds.getOwningKey();
-            PublicKey amazonKey = couponState.getCounterParty().getOwningKey();
+            req.using("Purchasing amount should be more than or equal to 500", couponState.getAmount() >= 500);
+            req.using("User name to whom the coupon is assigned, should not be empty ", !(couponState.getUsername().isEmpty()));
+            req.using("Other Party cannot be empty ", couponState.getCounterParty() != null);
 
-            req.using("Netmeds should sign the transaction ", signers.contains(netmedsKey));
-            req.using("Amazon should sign the transaction", signers.contains(amazonKey));
+            Party couponIssuanceParty =  couponState.getInitiatingParty();
+            PublicKey couponIssuancePartyKey  = couponIssuanceParty.getOwningKey();
+            PublicKey vendorKey = couponState.getCounterParty().getOwningKey();
+
+            req.using("Coupon issuer, Netmeds should sign the transaction ", signers.contains(couponIssuancePartyKey));
+            req.using("Coupon vendor should sign the transaction", signers.contains(vendorKey));
 
             return  null;
         });
     }
 
-    private void verifyCouponUsage(LedgerTransaction tx, List<PublicKey> signers) {
+    private void verifyCouponAcceptance(LedgerTransaction tx, List<PublicKey> signers) {
 
         requireThat(req -> {
 
@@ -70,27 +75,50 @@ public class CouponContract implements Contract {
             req.using("input must be of the type CouponState ", input instanceof CouponState);
             req.using("Output must be of the type CouponState ", output instanceof CouponState);
 
+            CouponState inputState = (CouponState) input;
+            CouponState outputState = (CouponState) output;
 
+            PublicKey couponIssuerKey = inputState.getInitiatingParty().getOwningKey();
+            PublicKey vendorKey = outputState.getCounterParty().getOwningKey();
 
+            req.using("CouponIsssuer should sign the transaction", signers.contains(couponIssuerKey));
+            req.using("Coupon Vendor should sign the transaction", signers.contains(vendorKey));
+
+            return null;
+        });
+    }
+
+    private void verifyCouponRedemption(LedgerTransaction tx, List<PublicKey> signers) {
+
+        requireThat(req -> {
+
+            req.using("Only one input should be consumed while redemption of the coupon", tx.getInputStates().size() == 1);
+            req.using("Only one output should be created while redemption of the coupon ", tx.getOutputStates().size() == 1);
+
+            ContractState input = tx.getInput(0);
+            ContractState output = tx.getOutput(0);
+
+            req.using("input must be of the type CouponState ", input instanceof CouponState);
+            req.using("Output must be of the type CouponState ", output instanceof CouponState);
 
             CouponState inputState = (CouponState) input;
             CouponState outputState = (CouponState) output;
 
-           // req.using("Amount is more than granted for coupon ", outputState.getAmount() > inputState.getAmount());
+            req.using("coupon should be authorized by vendor " , (inputState.isCouponApproved()));
 
-            PublicKey netmedsKey = inputState.getInitiatingParty().getOwningKey();
-            PublicKey amazonkey = outputState.getCounterParty().getOwningKey();
+            PublicKey couponIssuerKey = inputState.getInitiatingParty().getOwningKey();
+            PublicKey vendorKey = outputState.getCounterParty().getOwningKey();
 
-            req.using("Netmeds should sign the transaction", signers.contains(netmedsKey));
-            req.using("Amazon should sign the transaction", signers.contains(amazonkey));
+            req.using("CouponIsssuer should sign the transaction", signers.contains(couponIssuerKey));
+            req.using("Coupon Vendor should sign the transaction", signers.contains(vendorKey));
 
             return null;
-        });
-
+            });
     }
 
     public interface Commands extends CommandData {
         public class CouponGeneration implements Commands { }
         public class CouponVerification implements Commands { }
+        public class CouponRedemption implements Commands { }
     }
 }

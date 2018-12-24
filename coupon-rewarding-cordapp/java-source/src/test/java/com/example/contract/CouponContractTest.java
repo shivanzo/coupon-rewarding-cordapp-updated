@@ -1,3 +1,4 @@
+
 package com.example.contract;
 
 import com.example.state.CouponState;
@@ -17,9 +18,9 @@ public class CouponContractTest {
     static private TestIdentity netmeds = new TestIdentity(new CordaX500Name("netMeds", "london", "GB"));
     static private TestIdentity amazon = new TestIdentity(new CordaX500Name("amazon", "New York", "US"));
 
-    private static int amount = 20000;
+    private static int amount = 500;
 
-    private static CouponState couponState = new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(), false, true);
+    private static CouponState couponState = new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(), false, true, "ShivanSawant");
 
     @Test
     public void transactionMustIncludeCreateCommand() {
@@ -46,14 +47,18 @@ public class CouponContractTest {
             return null;
         });
 
-        /**** uncomment for failure criteria **/
-           /* transaction(ledgerServices,tx -> {
+
+/**** uncomment for failure criteria **//*
+
+           */
+/* transaction(ledgerServices,tx -> {
                 tx.input(FINANCE_CONTRACT_ID, financeBankState);
                 tx.output(FINANCE_CONTRACT_ID, financeBankState);
                 tx.command(ImmutableList.of(finance.getParty().getOwningKey(), bank.getParty().getOwningKey()), new LoanReqContract.Commands.InitiateLoan());
                 tx.failsWith("No inputs should be consumed when issuing .");
                 return null;
             });*/
+
     }
 
     @Test
@@ -66,58 +71,70 @@ public class CouponContractTest {
             return null;
         });
 
-        /**** uncomment for failure criteria **/
-        /* transaction(ledgerServices,tx -> {
+
+/**** uncomment for failure criteria **//*
+
+        */
+/* transaction(ledgerServices,tx -> {
             tx.output(FINANCE_CONTRACT_ID, financeBankState);
             tx.output(FINANCE_CONTRACT_ID, financeBankState);
                 tx.command(ImmutableList.of(finance.getPublicKey(), bank.getPublicKey()), new LoanReqContract.Commands.InitiateLoan());
                 tx.failsWith("Only one output state should be created.");
                 return null;
             });*/
+
     }
 
     @Test
     public void lenderMustSignTransaction() {
 
         transaction(ledgerServices,tx -> {
-            tx.output(COUPON_CONTRACT_ID, new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(),false, true));
+            tx.output(COUPON_CONTRACT_ID, couponState);
             tx.command(ImmutableList.of(netmeds.getPublicKey(),amazon.getPublicKey()), new CouponContract.Commands.CouponGeneration());
             tx.verifies();
             return null;
         });
 
-        /****uncomment for failure criteria **/
-       /* transaction(ledgerServices,tx -> {
+
+/****uncomment for failure criteria **//*
+
+       */
+/* transaction(ledgerServices,tx -> {
                 tx.output(FINANCE_CONTRACT_ID, new LoanRequestState(finance.getParty(), bank.getParty(), companyName,amount,new UniqueIdentifier(),false,new UniqueIdentifier()));
                 tx.command(ImmutableList.of(bank.getPublicKey()), new LoanReqContract.Commands.InitiateLoan());
                 tx.failsWith("All of the participants must be signers.");
                 return null;
             });*/
+
     }
 
     @Test
     public void borrowerMustSignTransaction() {
 
         transaction(ledgerServices,tx -> {
-            tx.output(COUPON_CONTRACT_ID, new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(),false, true));
+            tx.output(COUPON_CONTRACT_ID, couponState);
             tx.command(ImmutableList.of(netmeds.getPublicKey(),amazon.getPublicKey()), new CouponContract.Commands.CouponGeneration());
             tx.verifies();
             return null;
         });
-        /**** uncomment for failure criteria ****/
-         /*transaction(ledgerServices,tx -> {
+
+/**** uncomment for failure criteria ****//*
+
+         */
+/*transaction(ledgerServices,tx -> {
                 tx.output(FINANCE_CONTRACT_ID, new LoanRequestState(finance.getParty(), bank.getParty(), companyName,amount,new UniqueIdentifier(),false,new UniqueIdentifier()));
                 tx.command(ImmutableList.of(finance.getPublicKey(),bank.getPublicKey()), new LoanReqContract.Commands.InitiateLoan());
                 tx.failsWith("All of the participants must be signers.");
                 return null;
         });*/
+
     }
 
     @Test
     public void lenderIsNotBorrower() {
 
         transaction(ledgerServices,tx -> {
-            tx.output(COUPON_CONTRACT_ID, new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(),false, true));
+            tx.output(COUPON_CONTRACT_ID, couponState);
             tx.command(ImmutableList.of(netmeds.getPublicKey(),amazon.getPublicKey()), new CouponContract.Commands.CouponGeneration());
             tx.verifies();
             return null;
@@ -127,7 +144,9 @@ public class CouponContractTest {
 
     @Test
     public void couponStateMustHaveOneInputs() {
-        /**** This test case also checks the both parties actually sign the transaction ***/
+
+/**** This test case also checks the both parties actually sign the transaction ***/
+
         transaction(ledgerServices, tx -> {
             tx.input(COUPON_CONTRACT_ID, couponState);
             tx.output(COUPON_CONTRACT_ID, couponState);
@@ -137,4 +156,42 @@ public class CouponContractTest {
         });
     }
 
+
+    @Test
+    public void redemptionCouponStateMustHaveOneInputs() {
+
+        transaction(ledgerServices, tx -> {
+            tx.input(COUPON_CONTRACT_ID, couponState);
+            tx.output(COUPON_CONTRACT_ID, couponState);
+            tx.command(ImmutableList.of(amazon.getParty().getOwningKey(), netmeds.getParty().getOwningKey()), new CouponContract.Commands.CouponRedemption());
+            return null;
+        });
+    }
+
+    @Test
+    public void verificationCouponStateMustHaveOneOuputs() {
+
+/**** This test case also checks the both parties actually sign the transaction ***/
+
+        transaction(ledgerServices, tx -> {
+            tx.input(COUPON_CONTRACT_ID, couponState);
+            tx.output(COUPON_CONTRACT_ID, couponState);
+            tx.command(ImmutableList.of(amazon.getParty().getOwningKey(), netmeds.getParty().getOwningKey()), new CouponContract.Commands.CouponVerification());
+            tx.verifies();
+            return null;
+        });
+    }
+
+    @Test
+    public void redemptionCouponStateMustHaveOneOutputs() {
+
+        transaction(ledgerServices, tx -> {
+            tx.input(COUPON_CONTRACT_ID, couponState);
+            tx.output(COUPON_CONTRACT_ID, couponState);
+            tx.command(ImmutableList.of(amazon.getParty().getOwningKey(), netmeds.getParty().getOwningKey()), new CouponContract.Commands.CouponRedemption());
+            return null;
+        });
+    }
+
 }
+

@@ -16,34 +16,31 @@ import net.corda.core.node.services.vault.QueryCriteria;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
-import org.jetbrains.annotations.NotNull;
 
 import static net.corda.core.contracts.ContractsDSL.requireThat;
 
 
 import java.util.List;
 
-public class IssueCouponAcceptance {
+public class IssueCouponAcceptanceFlow {
 
     @InitiatingFlow
     @StartableByRPC
     public static class Initiator extends FlowLogic<SignedTransaction> {
 
-        private final Party netMedsParty;
+        private Party couponIssuerParty;
         private boolean isCouponUtilized;
         UniqueIdentifier coupounId;
         private int amount;
         private boolean isCouponApproved;
-        private int grantedAmount;
+        private String userName;
 
-        public Initiator(Party netMedsParty, UniqueIdentifier couponId, int amount) {
-            this.netMedsParty = netMedsParty;
+        public Initiator(UniqueIdentifier couponId) {
             this.coupounId = couponId;
-            this.amount = amount;
         }
 
-        public Party getNetMedsParty() {
-            return netMedsParty;
+        public Party getCouponIssuerParty() {
+            return couponIssuerParty;
         }
 
         public boolean isCouponUtilized() {
@@ -78,13 +75,6 @@ public class IssueCouponAcceptance {
             isCouponApproved = couponApproved;
         }
 
-        public int getGrantedAmount() {
-            return grantedAmount;
-        }
-
-        public void setGrantedAmount(int grantedAmount) {
-            this.grantedAmount = grantedAmount;
-        }
 
         private final ProgressTracker.Step VERIFYING_TRANSACTION = new ProgressTracker.Step("Verifying contract constraints.");
         private final ProgressTracker.Step VERIFYING_COUPON = new ProgressTracker.Step("Response from credit rating agency about loan eligibility and approval");
@@ -113,7 +103,7 @@ public class IssueCouponAcceptance {
 
             CouponState couponState = null;
             final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
-            Party amazonParty = getServiceHub().getMyInfo().getLegalIdentities().get(0);
+            Party vendorParty = getServiceHub().getMyInfo().getLegalIdentities().get(0);
             StateAndRef<CouponState> inputState = null;
 
             QueryCriteria criteriaCouponState = new QueryCriteria.LinearStateQueryCriteria(
@@ -130,15 +120,11 @@ public class IssueCouponAcceptance {
             }
 
             inputState = inputStateList.get(0);
-            grantedAmount = inputStateList.get(0).getState().getData().getAmount();
+            amount = inputStateList.get(0).getState().getData().getAmount();
+            userName = inputStateList.get(0).getState().getData().getUsername();
+            couponIssuerParty = inputStateList.get(0).getState().getData().getInitiatingParty();
 
-            if (amount > grantedAmount) {
-                throw new FlowException("########## Amount exceeded the value : " + grantedAmount + " " + amount );
-            }
-
-            amount = calculateDifference(amount, grantedAmount);
-
-            couponState = new CouponState(netMedsParty, amazonParty, amount, coupounId, false, true);
+            couponState = new CouponState(couponIssuerParty, vendorParty, amount, coupounId, false, true, userName);
 
             progressTracker.setCurrentStep(VERIFYING_COUPON);
 
@@ -160,7 +146,7 @@ public class IssueCouponAcceptance {
 
             progressTracker.setCurrentStep(GATHERING_SIGS);
 
-            FlowSession otherPartySession = initiateFlow(netMedsParty);
+            FlowSession otherPartySession = initiateFlow(couponIssuerParty);
 
             final SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, ImmutableSet.of(otherPartySession), CollectSignaturesFlow.Companion.tracker()));
 
@@ -171,10 +157,6 @@ public class IssueCouponAcceptance {
 
         }
 
-        private int calculateDifference(int amount, int grantedAmount) {
-
-            return (grantedAmount - amount);
-        }
     }
 
     @InitiatedBy(Initiator.class)
@@ -196,7 +178,7 @@ public class IssueCouponAcceptance {
                 {
                     requireThat(require -> {
                         ContractState output = stx.getTx().getOutputs().get(0).getData();
-                        require.using("This must be an credit agency transaction (LoanVerificationState).", output instanceof CouponState);
+                        require.using("This must be of the type CouponState.", output instanceof CouponState);
                         return null;
                     });
                 }

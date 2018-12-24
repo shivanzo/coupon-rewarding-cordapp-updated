@@ -22,18 +22,20 @@ public class IssueCouponRequestFlow {
     @StartableByRPC
     public static class Initiator extends FlowLogic<SignedTransaction> {
 
-        private final Party amazonParty;
+        private final Party couponVendorParty;
         private int amount;
         private UniqueIdentifier couponId;
         private boolean isCouponApproved;
+        private String userName;
 
-        public Initiator(Party amazonParty, int amount) {
-            this.amazonParty = amazonParty;
+        public Initiator(Party couponVendorParty, int amount, String userName) {
+            this.couponVendorParty = couponVendorParty;
             this.amount = amount;
+            this.userName = userName;
         }
 
-        public Party getAmazonParty() {
-            return amazonParty;
+        public Party getCouponVendorParty() {
+            return couponVendorParty;
         }
 
         public int getAmount() {
@@ -51,8 +53,17 @@ public class IssueCouponRequestFlow {
         public boolean isCouponApproved() {
             return isCouponApproved;
         }
+
         public void setCouponApproved(boolean couponApproved) {
             isCouponApproved = couponApproved;
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public void setUserName(String userName) {
+            this.userName = userName;
         }
 
         private final ProgressTracker.Step COUPON_GENERATION = new ProgressTracker.Step("Coupon is generated upon the purchased of medicine");
@@ -87,8 +98,8 @@ public class IssueCouponRequestFlow {
             progressTracker.setCurrentStep(COUPON_GENERATION);
 
             //Generate an unsigned transaction
-            Party netmedsParty = getServiceHub().getMyInfo().getLegalIdentities().get(0);
-            CouponState couponState = new CouponState(netmedsParty, amazonParty, amount, new UniqueIdentifier(), false, false);
+            Party couponIssuerParty = getServiceHub().getMyInfo().getLegalIdentities().get(0);
+            CouponState couponState = new CouponState(couponIssuerParty, couponVendorParty, amount, new UniqueIdentifier(), false, false, userName);
             final Command<CouponContract.Commands.CouponGeneration> couponGenerationCommand = new Command<CouponContract.Commands.CouponGeneration>(new CouponContract.Commands.CouponGeneration(), ImmutableList.of(couponState.getInitiatingParty().getOwningKey(), couponState.getCounterParty().getOwningKey()));
 
             final TransactionBuilder txBuilder = new TransactionBuilder(notary)
@@ -106,7 +117,7 @@ public class IssueCouponRequestFlow {
             progressTracker.setCurrentStep(GATHERING_SIGS);
 
             // Send the state to the counterparty, and receive it back with their signature.
-            FlowSession otherPartySession = initiateFlow(amazonParty);
+            FlowSession otherPartySession = initiateFlow(couponVendorParty);
             final SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, ImmutableSet.of(otherPartySession), CollectSignaturesFlow.Companion.tracker()));
             //stage 5
             progressTracker.setCurrentStep(FINALISING_TRANSACTION);
@@ -138,7 +149,7 @@ public class IssueCouponRequestFlow {
                 protected void checkTransaction(SignedTransaction stx) throws FlowException {
                     requireThat(require -> {
                         ContractState output = stx.getTx().getOutputs().get(0).getData();
-                        require.using("This must be a transaction between netmeds and amazon (CouponState transaction).", output instanceof CouponState);
+                        require.using("This must be a transaction between coupon issuer  and coupon vendor (CouponState transaction).", output instanceof CouponState);
                         return null;
                     });
                 }

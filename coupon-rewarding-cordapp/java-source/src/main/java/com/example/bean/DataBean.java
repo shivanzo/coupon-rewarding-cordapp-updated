@@ -9,6 +9,7 @@ public class DataBean {
     private int value;
     private CordaX500Name partyName;
     private String couponId;
+    private String userName;
 
     public int getValue() {
         return value;
@@ -34,12 +35,21 @@ public class DataBean {
         this.couponId = couponId;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
     @Override
     public String toString() {
         return "DataBean{" +
                 "value=" + value +
                 ", partyName=" + partyName +
                 ", couponId='" + couponId + '\'' +
+                ", userName='" + userName + '\'' +
                 '}';
     }
 }

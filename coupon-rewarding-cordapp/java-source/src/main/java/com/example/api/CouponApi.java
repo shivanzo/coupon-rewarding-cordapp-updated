@@ -2,11 +2,12 @@ package com.example.api;
 
 import com.example.bean.DataBean;
 import com.example.flow.CouponRedemptionFlow;
+import com.example.flow.IssueCouponAcceptanceFlow;
 import com.example.flow.IssueCouponRequestFlow;
-import com.example.flow.IssueCouponAcceptance;
 import com.example.state.CouponState;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import net.corda.core.contracts.ContractState;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.identity.CordaX500Name;
@@ -52,27 +53,42 @@ public class CouponApi {
         return ImmutableMap.of("me", myLegalName);
     }
 
-
-   
-
-
     @GET
     @Path("coupon-states")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getFinacneBankQuery() {
+    public Response getCouponStateQuery() {
         System.out.println("VaultQuery : " + rpcOps.vaultQuery(CouponState.class).getStates());
        return Response.status(200).entity(rpcOps.vaultQuery(CouponState.class).getStates()).build();
     }
 
+
+    @GET
+    @Path("coupon-amount")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAmount() {
+        int amount = 0;
+        List<StateAndRef<CouponState>> input = rpcOps.vaultQuery(CouponState.class).getStates();
+        amount = input.get(0).getState().getData().getAmount();
+        System.out.println("amount : " + amount);
+        return Response.status(200).entity(amount).build();
+    }
+
+
     @POST
     @Path("coupon-generations")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response loanRequest(DataBean detail) throws InterruptedException, ExecutionException {
-        CordaX500Name amazonNode = detail.getPartyName();
-        int value = detail.getValue();
-        final Party otherParty = rpcOps.wellKnownPartyFromX500Name(amazonNode);
+    public Response couponGeneration(DataBean dataBean) throws InterruptedException, ExecutionException {
 
-        if (amazonNode == null) {
+        CordaX500Name couponVendorNode = dataBean.getPartyName();
+        int value = dataBean.getValue();
+        final Party otherParty = rpcOps.wellKnownPartyFromX500Name(couponVendorNode);
+        String userName = dataBean.getUserName();
+
+        if (userName == null || "".equalsIgnoreCase(userName) || userName.isEmpty()) {
+            return Response.status(BAD_REQUEST).entity("paramete 'username' is invalid...!!!. \n").build();
+        }
+
+        if (couponVendorNode == null) {
             return Response.status(BAD_REQUEST).entity("parameter 'partyName' missing or has wrong format.\n").build();
         }
 
@@ -81,13 +97,13 @@ public class CouponApi {
         }
 
         if (otherParty == null) {
-            return Response.status(BAD_REQUEST).entity("Party named " + amazonNode + "cannot be found.\n").build();
+            return Response.status(BAD_REQUEST).entity("Party named " + couponVendorNode + "cannot be found.\n").build();
         }
 
         try {
-            IssueCouponRequestFlow.Initiator initiator = new IssueCouponRequestFlow.Initiator(otherParty, value);
+            IssueCouponRequestFlow.Initiator initiator = new IssueCouponRequestFlow.Initiator(otherParty, value, userName);
             final SignedTransaction signedTx = rpcOps
-                    .startTrackedFlowDynamic(initiator.getClass(), otherParty, value)
+                    .startTrackedFlowDynamic(initiator.getClass(), otherParty, value, userName)
                     .getReturnValue()
                     .get();
 
@@ -103,43 +119,25 @@ public class CouponApi {
     @POST
     @Path("coupon-verifications")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response creditAgencyResponse(DataBean dataBean) throws InterruptedException, ExecutionException {
+    public Response couponVerification(DataBean dataBean) throws InterruptedException, ExecutionException {
 
-        CordaX500Name partyName = dataBean.getPartyName();
         String couponId = dataBean.getCouponId();
-        int value = dataBean.getValue();
-
-        final Party otherParty = rpcOps.wellKnownPartyFromX500Name(partyName);
-
-        if (partyName == null) {
-            return Response.status(BAD_REQUEST).entity(" parameter 'partyName' missing or has wrong format.\n").build();
-        }
-
-        if (otherParty == null) {
-            return Response.status(BAD_REQUEST).entity("Party named " + partyName + "cannot be found.\n").build();
-        }
 
         if (couponId == null) {
             return Response.status(BAD_REQUEST).entity("linear id of previous unconsumed state cannot be empty. \n").build();
         }
-
-        if (value <= 0) {
-            return Response.status(BAD_REQUEST).entity(" parameter 'Amount' must be non-negative.\n").build();
-        }
-
         System.out.println("Vault Query Coupon State : " + rpcOps.vaultQuery(CouponState.class).getStates() );
         UniqueIdentifier linearIdCouponState = new UniqueIdentifier();
         UniqueIdentifier uuidCouponState = linearIdCouponState.copy(null, UUID.fromString(couponId));
 
         try {
-            //CreditRatingResponseFlow.Initiator initiator = new CreditRatingResponseFlow.Initiator(otherParty, uuidCouponState);
-            IssueCouponAcceptance.Initiator initiator = new IssueCouponAcceptance.Initiator(otherParty, uuidCouponState, value);
+            IssueCouponAcceptanceFlow.Initiator initiator = new IssueCouponAcceptanceFlow.Initiator(uuidCouponState);
             final SignedTransaction signedTx = rpcOps
-                    .startTrackedFlowDynamic(initiator.getClass(), otherParty, uuidCouponState, value)
+                    .startTrackedFlowDynamic(initiator.getClass(), uuidCouponState)
                     .getReturnValue()
                     .get();
 
-            final String msg = String.format("AMAZON INDIA.\n Transaction id %s is successfully committed to ledger. \n", signedTx.getId());
+            final String msg = String.format("Coupon Sucessfully Verified For Usage.\n Transaction id %s is successfully committed to ledger. \n", signedTx.getId());
             return Response.status(CREATED).entity(msg).build();
 
         } catch (Throwable ex) {
@@ -149,47 +147,39 @@ public class CouponApi {
         }
     }
 
-
     @POST
     @Path("coupon-redemption")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response couponRedemption(DataBean dataBean) throws InterruptedException, ExecutionException {
 
-        CordaX500Name partyName = dataBean.getPartyName();
         String couponId = dataBean.getCouponId();
+        int value = dataBean.getValue();
+        String userName = dataBean.getUserName();
 
-        final Party otherParty = rpcOps.wellKnownPartyFromX500Name(partyName);
-
-
-        if (partyName == null) {
-            return Response.status(BAD_REQUEST).entity(" parameter 'partyName' missing or has wrong format.\n").build();
+        if (userName == null || "".equalsIgnoreCase(userName) || userName.isEmpty()) {
+            return Response.status(BAD_REQUEST).entity("paramete 'username' is invalid...!!!. \n").build();
         }
-
-        if (otherParty == null) {
-            return Response.status(BAD_REQUEST).entity("Party named " + partyName + "cannot be found.\n").build();
-        }
-
         if (couponId == null) {
-            return Response.status(BAD_REQUEST).entity("linear id of previous unconsumed state cannot be empty. \n").build();
+            return Response.status(BAD_REQUEST).entity("couponId of previous unconsumed state cannot be empty. \n").build();
+        }
+        if (value <= 0) {
+            return Response.status(BAD_REQUEST).entity(" parameter 'Amount' must be non-negative.\n").build();
         }
 
         System.out.println("Vault Query Coupon State : " + rpcOps.vaultQuery(CouponState.class).getStates());
         UniqueIdentifier linearIdCouponState = new UniqueIdentifier();
         UniqueIdentifier uuidCouponState = linearIdCouponState.copy(null, UUID.fromString(couponId));
 
-
         try {
 
-            CouponRedemptionFlow.Initiator initiator = new CouponRedemptionFlow.Initiator(otherParty, uuidCouponState);
+            CouponRedemptionFlow.Initiator initiator = new CouponRedemptionFlow.Initiator(uuidCouponState, value, userName);
             final SignedTransaction signedTx = rpcOps
-                                                .startTrackedFlowDynamic(initiator.getClass(), otherParty, uuidCouponState)
+                                                .startTrackedFlowDynamic(initiator.getClass(), uuidCouponState, value, userName)
                                                 .getReturnValue()
                                                 .get();
 
-            final String msg = String.format("AMAZON INDIA.\n Transaction id %s is successfully committed to ledger. \n", signedTx.getId());
+            final String msg = String.format(" Congragulation. Coupon sucessfully Redeemed.\n Transaction id %s is successfully committed to ledger. \n", signedTx.getId());
             return Response.status(BAD_REQUEST).entity(msg).build();
-
-
         } catch (Throwable ex) {
             final String msg = ex.getMessage();
             logger.error(ex.getMessage(), ex);
