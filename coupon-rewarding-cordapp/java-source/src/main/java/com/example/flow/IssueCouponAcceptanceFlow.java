@@ -34,6 +34,7 @@ public class IssueCouponAcceptanceFlow {
         private int amount;
         private boolean isCouponApproved;
         private String userName;
+        private String couponName;
 
         public Initiator(UniqueIdentifier couponId) {
             this.coupounId = couponId;
@@ -75,6 +76,13 @@ public class IssueCouponAcceptanceFlow {
             isCouponApproved = couponApproved;
         }
 
+        public String getUserName() {
+            return userName;
+        }
+
+        public void setCouponName(String couponName) {
+            this.couponName = couponName;
+        }
 
         private final ProgressTracker.Step VERIFYING_TRANSACTION = new ProgressTracker.Step("Verifying contract constraints.");
         private final ProgressTracker.Step VERIFYING_COUPON = new ProgressTracker.Step("Response from credit rating agency about loan eligibility and approval");
@@ -123,8 +131,9 @@ public class IssueCouponAcceptanceFlow {
             amount = inputStateList.get(0).getState().getData().getAmount();
             userName = inputStateList.get(0).getState().getData().getUsername();
             couponIssuerParty = inputStateList.get(0).getState().getData().getInitiatingParty();
+            couponName = inputStateList.get(0).getState().getData().getCouponName();
 
-            couponState = new CouponState(couponIssuerParty, vendorParty, amount, coupounId, false, true, userName);
+            couponState = new CouponState(couponIssuerParty, vendorParty, amount, coupounId, false, true, userName, couponName);
 
             progressTracker.setCurrentStep(VERIFYING_COUPON);
 

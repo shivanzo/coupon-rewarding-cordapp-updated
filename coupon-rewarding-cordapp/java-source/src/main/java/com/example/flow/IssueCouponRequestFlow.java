@@ -27,11 +27,13 @@ public class IssueCouponRequestFlow {
         private UniqueIdentifier couponId;
         private boolean isCouponApproved;
         private String userName;
+        private String couponName;
 
-        public Initiator(Party couponVendorParty, int amount, String userName) {
+        public Initiator(Party couponVendorParty, int amount, String userName, String couponName) {
             this.couponVendorParty = couponVendorParty;
             this.amount = amount;
             this.userName = userName;
+            this.couponName = couponName;
         }
 
         public Party getCouponVendorParty() {
@@ -64,6 +66,14 @@ public class IssueCouponRequestFlow {
 
         public void setUserName(String userName) {
             this.userName = userName;
+        }
+
+        public String getCouponName() {
+            return couponName;
+        }
+
+        public void setCouponName(String couponName) {
+            this.couponName = couponName;
         }
 
         private final ProgressTracker.Step COUPON_GENERATION = new ProgressTracker.Step("Coupon is generated upon the purchased of medicine");
@@ -99,7 +109,7 @@ public class IssueCouponRequestFlow {
 
             //Generate an unsigned transaction
             Party couponIssuerParty = getServiceHub().getMyInfo().getLegalIdentities().get(0);
-            CouponState couponState = new CouponState(couponIssuerParty, couponVendorParty, amount, new UniqueIdentifier(), false, false, userName);
+            CouponState couponState = new CouponState(couponIssuerParty, couponVendorParty, amount, new UniqueIdentifier(), false, false, userName, couponName);
             final Command<CouponContract.Commands.CouponGeneration> couponGenerationCommand = new Command<CouponContract.Commands.CouponGeneration>(new CouponContract.Commands.CouponGeneration(), ImmutableList.of(couponState.getInitiatingParty().getOwningKey(), couponState.getCounterParty().getOwningKey()));
 
             final TransactionBuilder txBuilder = new TransactionBuilder(notary)

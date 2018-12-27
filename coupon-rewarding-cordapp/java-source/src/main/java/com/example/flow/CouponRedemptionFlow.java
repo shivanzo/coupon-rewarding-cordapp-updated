@@ -35,6 +35,7 @@ public class CouponRedemptionFlow {
         private int grantedAmount;
         private String userName;
         private String enteredUserName;
+        private String couponName;
 
         public Initiator(UniqueIdentifier coupounId, int amount, String enteredUserName) {
             this.coupounId = coupounId;
@@ -95,6 +96,10 @@ public class CouponRedemptionFlow {
             this.enteredUserName = enteredUserName;
         }
 
+        public String getCouponName() {
+            return couponName;
+        }
+
         private final ProgressTracker.Step VERIFYING_TRANSACTION = new ProgressTracker.Step("Verifying contract constraints.");
         private final ProgressTracker.Step VERIFYING_COUPON = new ProgressTracker.Step("Response from credit rating agency about loan eligibility and approval");
         private final ProgressTracker.Step SIGNING_TRANSACTION = new ProgressTracker.Step("Signing transaction with our private key.");
@@ -142,6 +147,7 @@ public class CouponRedemptionFlow {
             grantedAmount = inputStateList.get(0).getState().getData().getAmount();
             userName = inputStateList.get(0).getState().getData().getUsername();
             couponIssuerParty = inputStateList.get(0).getState().getData().getInitiatingParty();
+            couponName = inputStateList.get(0).getState().getData().getCouponName();
 
             if (amount > grantedAmount) {
                 throw new FlowException("########## Amount exceeded the value : " + grantedAmount + " " + amount );
@@ -153,7 +159,7 @@ public class CouponRedemptionFlow {
 
             amount = calculateDifference(amount, grantedAmount);
 
-            couponState = new CouponState(couponIssuerParty, vendorParty, amount, coupounId, true, true, userName);
+            couponState = new CouponState(couponIssuerParty, vendorParty, amount, coupounId, true, true, userName, couponName);
 
             progressTracker.setCurrentStep(VERIFYING_COUPON);
 

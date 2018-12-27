@@ -21,9 +21,10 @@ public class CouponState implements LinearState {
    private UniqueIdentifier couponId;
    private boolean isCouponApproved;
    private String username;
+   private final String couponName;
 
    @ConstructorForDeserialization
-   public CouponState(Party initiatingParty, Party counterParty, int amount, UniqueIdentifier couponId, boolean isCouponUtilized, boolean isCouponApproved, String username) {
+   public CouponState(Party initiatingParty, Party counterParty, int amount, UniqueIdentifier couponId, boolean isCouponUtilized, boolean isCouponApproved, String username, String couponName) {
        this.initiatingParty = initiatingParty;
        this.counterParty = counterParty;
        this.amount = amount;
@@ -31,6 +32,7 @@ public class CouponState implements LinearState {
        this.isCouponUtilized = isCouponUtilized;
        this.isCouponApproved = isCouponApproved;
        this.username = username;
+       this.couponName = couponName;
    }
 
     public Party getInitiatingParty() {
@@ -80,6 +82,12 @@ public class CouponState implements LinearState {
     public void setUsername(String username) {
         this.username = username;
     }
+
+    public String getCouponName() {
+        return couponName;
+    }
+
+
 
     @NotNull
     @Override

@@ -67,10 +67,28 @@ public class CouponApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAmount() {
         int amount = 0;
+        String couponName;
+        UniqueIdentifier couponId = null;
         List<StateAndRef<CouponState>> input = rpcOps.vaultQuery(CouponState.class).getStates();
-        amount = input.get(0).getState().getData().getAmount();
-        System.out.println("amount : " + amount);
-        return Response.status(200).entity(amount).build();
+        StringBuffer sbr = new StringBuffer();
+        sbr.append("<TABLE BORDER=" + "\"" + 1 + "\"");
+
+        //sbr.append("<TABLE BORDER=\" + \"\\\"\" + 1 + \"\\\">");
+        sbr.append("<TR><TH>Coupon Name</TH><TH>Amount</TH><TH>Coupon id</TH></TR>");
+        for (int i = 0; i < input.size(); i++) {
+
+            amount = input.get(i).getState().getData().getAmount();
+            couponName = input.get(i).getState().getData().getCouponName();
+            couponId  = input.get(i).getState().getData().getCouponId();
+
+            sbr.append("<TR><TD>" + amount + "</TD>");
+            sbr.append("<TD>" + couponName + "</TD>");
+            sbr.append("<TD>" + couponId + "</TD>");
+            sbr.append("</TR>");
+        }
+
+        sbr.append("</TABLE>");
+        return Response.status(200).entity(sbr.toString()).build();
     }
 
 
@@ -83,27 +101,28 @@ public class CouponApi {
         int value = dataBean.getValue();
         final Party otherParty = rpcOps.wellKnownPartyFromX500Name(couponVendorNode);
         String userName = dataBean.getUserName();
+        String couponName = dataBean.getCouponName();
 
         if (userName == null || "".equalsIgnoreCase(userName) || userName.isEmpty()) {
             return Response.status(BAD_REQUEST).entity("paramete 'username' is invalid...!!!. \n").build();
         }
-
+        if (couponName == null || "".equalsIgnoreCase(couponName) || couponName.isEmpty()) {
+            return Response.status(BAD_REQUEST).entity("parameter 'couponName' is invalid...!!!. \n").build();
+        }
         if (couponVendorNode == null) {
             return Response.status(BAD_REQUEST).entity("parameter 'partyName' missing or has wrong format.\n").build();
         }
-
         if (value <= 0) {
             return Response.status(BAD_REQUEST).entity(" parameter 'Amount' must be non-negative.\n").build();
         }
-
         if (otherParty == null) {
             return Response.status(BAD_REQUEST).entity("Party named " + couponVendorNode + "cannot be found.\n").build();
         }
 
         try {
-            IssueCouponRequestFlow.Initiator initiator = new IssueCouponRequestFlow.Initiator(otherParty, value, userName);
+            IssueCouponRequestFlow.Initiator initiator = new IssueCouponRequestFlow.Initiator(otherParty, value, userName, couponName);
             final SignedTransaction signedTx = rpcOps
-                    .startTrackedFlowDynamic(initiator.getClass(), otherParty, value, userName)
+                    .startTrackedFlowDynamic(initiator.getClass(), otherParty, value, userName, couponName)
                     .getReturnValue()
                     .get();
 

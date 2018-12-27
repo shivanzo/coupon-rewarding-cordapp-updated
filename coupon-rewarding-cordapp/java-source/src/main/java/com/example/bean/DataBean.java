@@ -10,6 +10,7 @@ public class DataBean {
     private CordaX500Name partyName;
     private String couponId;
     private String userName;
+    private String couponName;
 
     public int getValue() {
         return value;
@@ -38,9 +39,14 @@ public class DataBean {
     public String getUserName() {
         return userName;
     }
-
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+    public String getCouponName() {
+        return couponName;
+    }
+    public void setCouponName(String couponName) {
+        this.couponName = couponName;
     }
 
     @Override
@@ -50,6 +56,7 @@ public class DataBean {
                 ", partyName=" + partyName +
                 ", couponId='" + couponId + '\'' +
                 ", userName='" + userName + '\'' +
+                ", couponName='" + couponName + '\'' +
                 '}';
     }
 }

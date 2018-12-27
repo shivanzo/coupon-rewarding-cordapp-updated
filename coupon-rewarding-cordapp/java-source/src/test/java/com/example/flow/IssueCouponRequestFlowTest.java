@@ -27,6 +27,8 @@ public class IssueCouponRequestFlowTest {
 
     private static int amount = 10000;
     private static String userName = "ShivanSawant";
+    private static String couponName = "Diwali Dhamaka";
+
 
     @Before
     public void setup() {
@@ -44,7 +46,7 @@ public class IssueCouponRequestFlowTest {
     
     @Test
     public void recordedTransactionHasNoInputsAndASingleOutputTheInputIOU() throws Exception {
-        IssueCouponRequestFlow.Initiator flow =  new IssueCouponRequestFlow.Initiator(nodeB.getInfo().getLegalIdentities().get(0), amount, userName);
+        IssueCouponRequestFlow.Initiator flow =  new IssueCouponRequestFlow.Initiator(nodeB.getInfo().getLegalIdentities().get(0), amount, userName, couponName);
         CordaFuture<SignedTransaction> future = nodeA.startFlow(flow);
         network.runNetwork();
         SignedTransaction signedTx = future.get();
@@ -68,7 +70,7 @@ public class IssueCouponRequestFlowTest {
 
     @Test
     public void flowRecordsATransactionInBothPartiesTransactionStorages() throws Exception {
-        IssueCouponRequestFlow.Initiator flow =  new IssueCouponRequestFlow.Initiator(nodeB.getInfo().getLegalIdentities().get(0), amount, userName);
+        IssueCouponRequestFlow.Initiator flow =  new IssueCouponRequestFlow.Initiator(nodeB.getInfo().getLegalIdentities().get(0), amount, userName, couponName);
         CordaFuture<SignedTransaction> future = nodeA.startFlow(flow);
         network.runNetwork();
         SignedTransaction signedTx = future.get();
@@ -82,7 +84,7 @@ public class IssueCouponRequestFlowTest {
 
     @Test
     public void signedTransactionReturnedByTheFlowIsSignedByTheAcceptor() throws Exception {
-        IssueCouponRequestFlow.Initiator flow =  new IssueCouponRequestFlow.Initiator(nodeB.getInfo().getLegalIdentities().get(0), amount, userName);
+        IssueCouponRequestFlow.Initiator flow =  new IssueCouponRequestFlow.Initiator(nodeB.getInfo().getLegalIdentities().get(0), amount, userName, couponName);
         CordaFuture<SignedTransaction> future = nodeA.startFlow(flow);
         network.runNetwork();
 
@@ -92,7 +94,7 @@ public class IssueCouponRequestFlowTest {
 
     @Test
     public void signedTransactionReturnedByTheFlowIsSignedByTheInitiator() throws Exception {
-        IssueCouponRequestFlow.Initiator flow =  new IssueCouponRequestFlow.Initiator(nodeB.getInfo().getLegalIdentities().get(0), amount, userName);
+        IssueCouponRequestFlow.Initiator flow =  new IssueCouponRequestFlow.Initiator(nodeB.getInfo().getLegalIdentities().get(0), amount, userName, couponName);
         CordaFuture<SignedTransaction> future = nodeA.startFlow(flow);
         network.runNetwork();
 

@@ -19,8 +19,9 @@ public class CouponContractTest {
     static private TestIdentity amazon = new TestIdentity(new CordaX500Name("amazon", "New York", "US"));
 
     private static int amount = 500;
+    private static String couponName = "Diwali Dhamaka";
 
-    private static CouponState couponState = new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(), false, true, "ShivanSawant");
+    private static CouponState couponState = new CouponState(netmeds.getParty(), amazon.getParty(), amount, new UniqueIdentifier(), false, true, "ShivanSawant", couponName);
 
     @Test
     public void transactionMustIncludeCreateCommand() {
