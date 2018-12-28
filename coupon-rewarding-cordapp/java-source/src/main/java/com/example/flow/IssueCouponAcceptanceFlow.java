@@ -124,7 +124,7 @@ public class IssueCouponAcceptanceFlow {
             List<StateAndRef<CouponState>> inputStateList = getServiceHub().getVaultService().queryBy(CouponState.class, criteriaCouponState).getStates();
 
             if (inputStateList == null || inputStateList.isEmpty()) {
-                throw new IllegalArgumentException("State with coupon id cannot be found : " + inputStateList.size() + " " + coupounId);
+                throw new IllegalArgumentException("State with coupon id cannot be found : " + inputStateList.size() + " " + coupounId + "Vendor Party : " + vendorParty);
             }
 
             inputState = inputStateList.get(0);

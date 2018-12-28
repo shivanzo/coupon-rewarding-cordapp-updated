@@ -72,8 +72,11 @@ public class CouponApi {
         List<StateAndRef<CouponState>> input = rpcOps.vaultQuery(CouponState.class).getStates();
         StringBuffer sbr = new StringBuffer();
         sbr.append("<TABLE BORDER=" + "\"" + 1 + "\"");
+        sbr.append("CLASS=");
+        sbr.append("   \"background\"           ");
+        sbr.append("ID=output");
+        sbr.append(">");
 
-        //sbr.append("<TABLE BORDER=\" + \"\\\"\" + 1 + \"\\\">");
         sbr.append("<TR><TH>Coupon Name</TH><TH>Amount</TH><TH>Coupon id</TH></TR>");
         for (int i = 0; i < input.size(); i++) {
 
@@ -156,7 +159,7 @@ public class CouponApi {
                     .getReturnValue()
                     .get();
 
-            final String msg = String.format("Coupon Sucessfully Verified For Usage.\n Transaction id %s is successfully committed to ledger. \n", signedTx.getId());
+            final String msg = String.format("Coupon Sucessfully Verified For Usage.\n Transaction id %s is successfully committed to ledger. \n ", signedTx.getId());
             return Response.status(CREATED).entity(msg).build();
 
         } catch (Throwable ex) {
@@ -197,7 +200,7 @@ public class CouponApi {
                                                 .getReturnValue()
                                                 .get();
 
-            final String msg = String.format(" Congragulation. Coupon sucessfully Redeemed.\n Transaction id %s is successfully committed to ledger. \n", signedTx.getId());
+            final String msg = String.format(" Congragulation. Coupon sucessfully Redeemed.\n Transaction id %s is successfully committed to ledger. \n ", signedTx.getId());
             return Response.status(BAD_REQUEST).entity(msg).build();
         } catch (Throwable ex) {
             final String msg = ex.getMessage();

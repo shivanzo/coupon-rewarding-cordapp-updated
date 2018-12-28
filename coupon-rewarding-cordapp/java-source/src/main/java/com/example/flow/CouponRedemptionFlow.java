@@ -140,7 +140,7 @@ public class CouponRedemptionFlow {
 
             List<StateAndRef<CouponState>> inputStateList = getServiceHub().getVaultService().queryBy(CouponState.class, criteriaCouponState).getStates();
             if (inputStateList == null || inputStateList.isEmpty()) {
-                throw new FlowException("State with coupon id cannot be found : " + inputStateList.size() + " " + coupounId);
+                throw new FlowException("State with coupon id cannot be found : " + inputStateList.size() + " " + coupounId  + "vendor name : " + vendorParty);
             }
 
             inputState = inputStateList.get(0);

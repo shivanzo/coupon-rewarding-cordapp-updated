@@ -9,6 +9,7 @@
     <script type="text/javascript">
          function genCoupon() {
 
+             alert(window.location.hostname);
              xmlHttpReq = new XMLHttpRequest();
              xmlHttpReq.open("POST", "http://localhost:10009/api/rewards/coupon-generations/", true);
              xmlHttpReq.onreadystatechange = displayResponse;

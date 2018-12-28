@@ -24,18 +24,24 @@ public class NodeDriver {
         driver(new DriverParameters().withWaitForAllNodesToFinish(true), dsl -> {
                     List<CordaFuture<NodeHandle>> nodeFutures = ImmutableList.of(
                             dsl.startNode(new NodeParameters()
-                                    .withProvidedName(new CordaX500Name("NetMeds", "London", "GB"))
+                                    .withProvidedName(new CordaX500Name("Zaggle", "London", "GB"))
                                     .withCustomOverrides(ImmutableMap.of("rpcSettings.address", "localhost:10008", "rpcSettings.adminAddress", "localhost:10048", "webAddress", "localhost:10009"))
                                     .withRpcUsers(ImmutableList.of(user))),
                             dsl.startNode(new NodeParameters()
-                                    .withProvidedName(new CordaX500Name("Amazon", "New York", "US"))
+                                    .withProvidedName(new CordaX500Name("AmazonPay", "New York", "US"))
                                     .withCustomOverrides(ImmutableMap.of("rpcSettings.address", "localhost:10011", "rpcSettings.adminAddress", "localhost:10051", "webAddress", "localhost:10012"))
+                                    .withRpcUsers(ImmutableList.of(user))),
+
+                            dsl.startNode(new NodeParameters()
+                                    .withProvidedName(new CordaX500Name("PhonePay", "Paris", "FR"))
+                                    .withCustomOverrides(ImmutableMap.of("rpcSettings.address", "localhost:10014", "rpcSettings.adminAddress", "localhost:10054", "webAddress", "localhost:10015"))
                                     .withRpcUsers(ImmutableList.of(user))));
 
 
                     try {
                         dsl.startWebserver(nodeFutures.get(0).get());
                         dsl.startWebserver(nodeFutures.get(1).get());
+                        dsl.startWebserver(nodeFutures.get(2).get());
 
                     } catch (Throwable e) {
                         System.err.println("Encountered exception in node startup: " + e.getMessage());

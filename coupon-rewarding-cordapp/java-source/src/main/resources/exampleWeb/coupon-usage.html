@@ -24,7 +24,7 @@
          function useCoupon() {
 
              xmlHttpReq = new XMLHttpRequest();
-             xmlHttpReq.open("POST", "http://localhost:10012/api/rewards/coupon-redemption/", true);
+             xmlHttpReq.open("POST", "http://localhost:10015/api/rewards/coupon-redemption/", true);
              xmlHttpReq.onreadystatechange = displayResponse;
              xmlHttpReq.setRequestHeader("Content-Type", "application/json");
              var couponId = document.getElementById("couponId").value;
