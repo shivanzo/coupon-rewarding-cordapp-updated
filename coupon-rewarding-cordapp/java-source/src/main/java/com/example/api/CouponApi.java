@@ -63,7 +63,7 @@ public class CouponApi {
 
 
     @GET
-    @Path("coupon-amount")
+    @Path("vault-data")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAmount() {
         int amount = 0;
@@ -77,15 +77,15 @@ public class CouponApi {
         sbr.append("ID=output");
         sbr.append(">");
 
-        sbr.append("<TR><TH>Coupon Name</TH><TH>Amount</TH><TH>Coupon id</TH></TR>");
+        sbr.append("<TR><TH>Coupon Name</TH><TH>Amount Remaining</TH><TH>Coupon id</TH></TR>");
         for (int i = 0; i < input.size(); i++) {
 
             amount = input.get(i).getState().getData().getAmount();
             couponName = input.get(i).getState().getData().getCouponName();
             couponId  = input.get(i).getState().getData().getCouponId();
 
-            sbr.append("<TR><TD>" + amount + "</TD>");
-            sbr.append("<TD>" + couponName + "</TD>");
+            sbr.append("<TR><TD>" + couponName  + "</TD>");
+            sbr.append("<TD>" + amount + "</TD>");
             sbr.append("<TD>" + couponId + "</TD>");
             sbr.append("</TR>");
         }

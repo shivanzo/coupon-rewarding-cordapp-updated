@@ -19,7 +19,7 @@
                      document.getElementById("coupons").innerHTML = this.responseText;
                  }
              };
-            xmlHttpReq.open("GET", "http://localhost:10012/api/rewards/coupon-amount/", true);
+            xmlHttpReq.open("GET", "http://localhost:10012/api/rewards/vault-data/", true);
              xmlHttpReq.send();
          }
 
@@ -67,7 +67,7 @@
     <style>
 
         div#outputmessage {
-            color:Red;
+            color:Black;
             font-size: 15px;
         }
 
@@ -87,8 +87,11 @@
 
          table, th, td {
          border-collapse: collapse;
-         border: 1px solid #0074d9;
-         background-color : #0074d9;
+        <!-- border: 1px solid #00FFFF;
+         background-color : #00FFFF;-->
+         border: 1px solid #279aff;
+         background-color : #279aff;
+
          }
          th, td {
          padding: 15px;
@@ -107,7 +110,7 @@
 </head>
 <body>
     <center>
-        <h1>Welcome To AmazonPay India</h1>
+        <h1>AmazonPay India</h1>
         <h5>Payments now made simpler</h5>
 
         <img src="Amazonpay.png" alt="amazonpay" width="100" height="29">

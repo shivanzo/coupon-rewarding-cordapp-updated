@@ -14,10 +14,9 @@
                      document.getElementById("coupons").innerHTML = this.responseText;
                  }
              };
-            xmlHttpReq.open("GET", "http://localhost:10015/api/rewards/coupon-amount/", true);
+            xmlHttpReq.open("GET", "http://localhost:10015/api/rewards/vault-data/", true);
              xmlHttpReq.send();
          }
-
 
           function useCoupon() {
 
@@ -68,8 +67,8 @@
 
          table, th, td {
          border-collapse: collapse;
-         border: 1px solid #0074d9;
-         background-color : #0074d9;
+         border: 1px solid #279aff;
+         background-color : #279aff;
          }
          th, td {
          padding: 15px;
@@ -89,7 +88,7 @@
 <body>
 <div class="bg">
     <center>
-        <h1>Welcome To PhonePay </h1>
+        <h1>PhonePay</h1>
         <h5>India's Payment App</h5>
         <img src="phonepay.png" alt="Smiley face" width="100" height="25">
 

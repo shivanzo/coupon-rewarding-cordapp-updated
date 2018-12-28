@@ -16,7 +16,7 @@
                     document.getElementById("coupons").innerHTML = this.responseText;
                 }
             };
-           xmlHttpReq.open("GET", "http://localhost:" + port + "/api/rewards/coupon-amount/", true);
+           xmlHttpReq.open("GET", "http://localhost:" + port + "/api/rewards/vault-data/", true);
             xmlHttpReq.send();
          }
 
@@ -65,7 +65,7 @@
          }
 
          div#result {
-            color:Red;
+            color:black;
             font-size: 15px;
         }
 
@@ -92,7 +92,7 @@
 </head>
 <body>
 <center>
-        <h1>Welcome To Zaggle</h1>
+        <h1>Zaggle</h1>
         <h5>why haggle when you can zaggle</h5>
         <img src="zaggle.jpg" alt="zaggle" width="100" height="64">
     <br/>
