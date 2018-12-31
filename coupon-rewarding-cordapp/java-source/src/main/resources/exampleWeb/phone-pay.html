@@ -10,7 +10,6 @@
              var xmlHttpReq = new XMLHttpRequest();
              xmlHttpReq.onreadystatechange = function() {
                  if(this.readyState == 4) {
-                     alert(this.responseText);
                      document.getElementById("coupons").innerHTML = this.responseText;
                  }
              };
@@ -55,7 +54,7 @@
          }
 
          div#result {
-            color:Red;
+            color:black;
             font-size: 15px;
         }
 

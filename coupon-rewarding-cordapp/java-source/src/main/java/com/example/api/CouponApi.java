@@ -62,6 +62,28 @@ public class CouponApi {
     }
 
 
+
+    @GET
+    @Path("approval-data")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getApprovalData() {
+        String emailId;
+        int amount = 0;
+        String couponName;
+        UniqueIdentifier couponId = null;
+        List<StateAndRef<CouponState>> input = rpcOps.vaultQuery(CouponState.class).getStates();
+        emailId = input.get(0).getState().getData().getUsername();
+        amount = input.get(0).getState().getData().getAmount();
+        StringBuffer sbr = new StringBuffer();
+        sbr.append("User assocaiated with coupo id is :  " + emailId + "<br/>" );
+        sbr.append(" " + "Amount allocated is : " + amount + "<br/><br/>");
+        sbr.append("<font color = Blue>Verification in progress ........ </font>");
+
+        return Response.status(200).entity(sbr.toString()).build();
+    }
+
+
+
     @GET
     @Path("vault-data")
     @Produces(MediaType.APPLICATION_JSON)
