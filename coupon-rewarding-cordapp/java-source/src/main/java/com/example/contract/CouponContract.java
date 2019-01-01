@@ -48,8 +48,8 @@ public class CouponContract implements Contract {
             CouponState couponState = (CouponState) outputState;
 
             req.using("Purchasing amount should be more than or equal to 500", couponState.getAmount() >= 500);
-            req.using("User name to whom the coupon is assigned, should not be empty ", !(couponState.getUsername().isEmpty()));
-            req.using("Other Party cannot be empty ", couponState.getCounterParty() != null);
+            req.using("User name/email to whom the coupon is assigned, should not be empty ", !(couponState.getUsername().isEmpty()));
+            req.using("Merchant name cannot be empty ", couponState.getCounterParty() != null);
 
             Party couponIssuanceParty =  couponState.getInitiatingParty();
             PublicKey couponIssuancePartyKey  = couponIssuanceParty.getOwningKey();
@@ -72,7 +72,7 @@ public class CouponContract implements Contract {
             ContractState input = tx.getInput(0);
             ContractState output = tx.getOutput(0);
 
-            req.using("input must be of the type CouponState ", input instanceof CouponState);
+            req.using("Input must be of the type CouponState ", input instanceof CouponState);
             req.using("Output must be of the type CouponState ", output instanceof CouponState);
 
             CouponState inputState = (CouponState) input;
@@ -81,8 +81,8 @@ public class CouponContract implements Contract {
             PublicKey couponIssuerKey = inputState.getInitiatingParty().getOwningKey();
             PublicKey vendorKey = outputState.getCounterParty().getOwningKey();
 
-            req.using("CouponIsssuer should sign the transaction", signers.contains(couponIssuerKey));
-            req.using("Coupon Vendor should sign the transaction", signers.contains(vendorKey));
+            req.using("Coupon-Isssuer should sign the transaction", signers.contains(couponIssuerKey));
+            req.using("Coupon-Vendor should sign the transaction", signers.contains(vendorKey));
 
             return null;
         });

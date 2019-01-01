@@ -9,8 +9,6 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript">
 
-
-
          function getCoupons() {
              var xmlHttpReq = new XMLHttpRequest();
              xmlHttpReq.onreadystatechange = function() {
@@ -25,32 +23,32 @@
 
           function useCoupon() {
               var port = getPortNumber();
+
               if(port == 10012)
               {
-              xmlHttpReq = new XMLHttpRequest();
-              xmlHttpReq.open("POST", "http://localhost:10012/api/rewards/coupon-redemption/", true);
-              xmlHttpReq.onreadystatechange = displayResponse;
-              xmlHttpReq.setRequestHeader("Content-Type", "application/json");
-              var couponId = document.getElementById("couponId").value;
-              var amount = document.getElementById("amount").value;
-              var username = document.getElementById("email").value;
-              var data = JSON.stringify({"couponId": couponId, "userName": username, "value": amount});
-              xmlHttpReq.send(data);
+                xmlHttpReq = new XMLHttpRequest();
+                xmlHttpReq.open("POST", "http://localhost:10012/api/rewards/coupon-redemption/", true);
+                xmlHttpReq.onreadystatechange = displayResponse;
+                xmlHttpReq.setRequestHeader("Content-Type", "application/json");
+                var couponId = document.getElementById("couponId").value;
+                var amount = document.getElementById("amount").value;
+                var username = document.getElementById("email").value;
+                var data = JSON.stringify({"couponId": couponId, "userName": username, "value": amount});
+                xmlHttpReq.send(data);
               }
-              else {
+              else
+              {
                 alert('Invalid port number');
               }
           }
 
           function displayResponse() {
-
-           if(xmlHttpReq.readyState == 4  ) {
-           alert(xmlHttpReq.responseText);
-          document.getElementById("outputmessage").innerHTML = xmlHttpReq.responseText;
-          getCoupons();
-          $('#refresh').removeClass('hide');
-          }
-
+            if(xmlHttpReq.readyState == 4  )
+            {
+               alert(xmlHttpReq.responseText);
+               document.getElementById("outputmessage").innerHTML = xmlHttpReq.responseText;
+               getCoupons();
+            }
           }
 
           function getPortNumber() {
@@ -59,7 +57,7 @@
             var splitUrl = url.split("/");
             var urlArray = splitUrl[2];
             var portSplit = urlArray.split(":");
-           var port  = portSplit[1].toString()
+            var port  = portSplit[1].toString()
             return port;
           }
       </script>
@@ -86,8 +84,6 @@
 
          table, th, td {
          border-collapse: collapse;
-        <!-- border: 1px solid #00FFFF;
-         background-color : #00FFFF;-->
          border: 1px solid #279aff;
          background-color : #279aff;
 
@@ -118,17 +114,16 @@
         <br/>
         <table>
             <tr>
-                <!--<td>Enter Amount</td>-->
                 <td><label class="text-white">Coupon Id</label></td>
-                <td><input type ="text" class="form-control input-sm" name="couponId" id ="couponId" placeholder="Enter coupon id"></td>
+                <td><input type ="text" class="form-control input-sm" name="couponId" id ="couponId" placeholder="Enter coupon id" required></td>
             </tr>
             <tr>
                 <td><label class="text-white">Amount</label></td>
-                <td><input type ="text" class="form-control input-sm" name="amount" id ="amount" placeholder="Enter Amount"></td>
+                <td><input type ="text" class="form-control input-sm" name="amount" id ="amount" placeholder="Enter Amount" required></td>
             </tr>
             <tr>
                 <td><label for="email" class="text-white">email</label></td>
-                <td><input type ="email" class="form-control input-sm" name="email" id ="email" placeholder="Enter your email id"></td>
+                <td><input type ="email" class="form-control input-sm" name="email" id ="email" placeholder="Enter your email id" required></td>
             </tr>
         </table>
         <br/>
@@ -146,8 +141,6 @@
     <br/>
     <div id ="coupons">
     </div>
-    <input type ="button" class="btn hide" name = "display" id ="display" value = "Refresh" onclick ="getCoupons();"/>
-
 </center>
 
 

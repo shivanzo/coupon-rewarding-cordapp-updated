@@ -87,8 +87,6 @@ public class CouponState implements LinearState {
         return couponName;
     }
 
-
-
     @NotNull
     @Override
     public UniqueIdentifier getLinearId() {

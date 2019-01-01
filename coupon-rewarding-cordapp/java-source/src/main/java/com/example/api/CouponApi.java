@@ -61,34 +61,29 @@ public class CouponApi {
        return Response.status(200).entity(rpcOps.vaultQuery(CouponState.class).getStates()).build();
     }
 
-
-
     @GET
     @Path("approval-data")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getApprovalData() {
         String emailId;
-        int amount = 0;
-        String couponName;
-        UniqueIdentifier couponId = null;
+        int amount;
         List<StateAndRef<CouponState>> input = rpcOps.vaultQuery(CouponState.class).getStates();
         emailId = input.get(0).getState().getData().getUsername();
         amount = input.get(0).getState().getData().getAmount();
+
         StringBuffer sbr = new StringBuffer();
-        sbr.append("User assocaiated with coupo id is :  " + emailId + "<br/>" );
+        sbr.append("User assocaiated with coupon id is :  " + emailId + "<br/>");
         sbr.append(" " + "Amount allocated is : " + amount + "<br/><br/>");
         sbr.append("<font color = Blue>Verification in progress ........ </font>");
 
         return Response.status(200).entity(sbr.toString()).build();
     }
 
-
-
     @GET
     @Path("vault-data")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAmount() {
-        int amount = 0;
+        int amount;
         String couponName;
         UniqueIdentifier couponId = null;
         List<StateAndRef<CouponState>> input = rpcOps.vaultQuery(CouponState.class).getStates();
@@ -98,10 +93,9 @@ public class CouponApi {
         sbr.append("   \"background\"           ");
         sbr.append("ID=output");
         sbr.append(">");
-
         sbr.append("<TR><TH>Coupon Name</TH><TH>Amount Remaining</TH><TH>Coupon id</TH></TR>");
-        for (int i = 0; i < input.size(); i++) {
 
+        for (int i = 0; i < input.size(); i++) {
             amount = input.get(i).getState().getData().getAmount();
             couponName = input.get(i).getState().getData().getCouponName();
             couponId  = input.get(i).getState().getData().getCouponId();
@@ -115,7 +109,6 @@ public class CouponApi {
         sbr.append("</TABLE>");
         return Response.status(200).entity(sbr.toString()).build();
     }
-
 
     @POST
     @Path("coupon-generations")

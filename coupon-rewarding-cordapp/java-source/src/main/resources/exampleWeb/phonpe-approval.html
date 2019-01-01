@@ -9,7 +9,6 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript">
 
-
          function getCoupons() {
              var xmlHttpReq = new XMLHttpRequest();
              xmlHttpReq.onreadystatechange = function() {
@@ -18,46 +17,44 @@
                  }
              };
             xmlHttpReq.open("GET", "http://localhost:10015/api/rewards/approval-data/", true);
-             xmlHttpReq.send();
+            xmlHttpReq.send();
          }
 
-
-          function useCoupon() {
+          function approveCoupon() {
               var port = getPortNumber();
               getCoupons();
-              if(port == 10015)
-              {
-              xmlHttpReq = new XMLHttpRequest();
-              xmlHttpReq.open("POST", "http://localhost:10015/api/rewards/coupon-verifications/", true);
-              xmlHttpReq.onreadystatechange = displayResponse;
-              xmlHttpReq.setRequestHeader("Content-Type", "application/json");
-              var couponId = document.getElementById("couponId").value;
-              var data = JSON.stringify({"couponId": couponId});
-              xmlHttpReq.send(data);
+              if(port == 10015) {
+                xmlHttpReq = new XMLHttpRequest();
+                xmlHttpReq.open("POST", "http://localhost:10015/api/rewards/coupon-verifications/", true);
+                xmlHttpReq.onreadystatechange = displayResponse;
+                xmlHttpReq.setRequestHeader("Content-Type", "application/json");
+                var couponId = document.getElementById("couponId").value;
+                var data = JSON.stringify({"couponId": couponId});
+                xmlHttpReq.send(data);
               }
               else {
                 alert('Invalid port number');
               }
           }
 
-          function displayResponse() {
-
-           if(xmlHttpReq.readyState == 4  ) {
-           alert(xmlHttpReq.responseText);
-          document.getElementById("outputmessage").innerHTML = xmlHttpReq.responseText;
-          getCoupons();
-          $('#refresh').removeClass('hide');
+          function displayResponse()
+          {
+            if(xmlHttpReq.readyState == 4)
+            {
+                alert(xmlHttpReq.responseText);
+                document.getElementById("outputmessage").innerHTML = xmlHttpReq.responseText;
+                getCoupons();
+                $('#refresh').removeClass('hide');
+            }
           }
 
-          }
-
-          function getPortNumber() {
-
+          function getPortNumber()
+          {
             var url = window.location.href;
             var splitUrl = url.split("/");
             var urlArray = splitUrl[2];
             var portSplit = urlArray.split(":");
-           var port  = portSplit[1].toString()
+            var port  = portSplit[1].toString()
             return port;
           }
       </script>
@@ -114,13 +111,12 @@
     <br/>
     <table>
         <tr>
-            <!--<td>Enter Amount</td>-->
             <td><label class="text-white">Coupon Id</label></td>
-            <td><input type ="text" class="form-control input-sm" name="couponId" id ="couponId" placeholder="Enter coupon id"></td>
+            <td><input type ="text" class="form-control input-sm" name="couponId" id ="couponId" placeholder="Enter coupon id" required></td>
         </tr>
     </table>
     <br/>
-    <td><input type ="button" class="btn btn-primary" name = "coupon" id ="coupon" value = "Approve" onclick ="useCoupon();"></td>
+    <td><input type ="button" class="btn btn-primary" name = "coupon" id ="coupon" value = "Approve" onclick ="approveCoupon();" required></td>
 </center>
 
 <br/>

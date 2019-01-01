@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <title>Hello</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript">
@@ -42,80 +44,79 @@
           }
       </script>
     <style>
+         div#result {
+            color:Black;
+            font-size: 15px;
+        }
 
+        table#output {
+            border-collapse: collapse;
+            border: 1px solid grey;
+        }
 
          body {
          background-color: white;
          }
 
-          label {
+         label {
             color :black;
 
          }
-
-         div#result {
-            color:black;
-            font-size: 15px;
-        }
-
-         table#output {
-            border-collapse: collapse;
-            border: 1px solid grey;
-        }
-
 
          table, th, td {
          border-collapse: collapse;
          border: 1px solid #279aff;
          background-color : #279aff;
+
          }
+
          th, td {
          padding: 15px;
          text-align: left;
          }
+
          h1 {
             font-size : 36px;
             font-family : fantasy;
             color: black;
          }
+
          h5 {
          color: #CB3C3C;
          font-family : fantasy;
          }
-      </style>
+
+    </style>
 </head>
 <body>
 <div class="bg">
     <center>
         <h1>PhonePay</h1>
         <h5>India's Payment App</h5>
-        <img src="phonepay.png" alt="Smiley face" width="100" height="25">
+        <img src="phonepay.png" alt="phonepay" width="100" height="25">
 
         <table>
             <tr>
-                <!--<td>Enter Amount</td>-->
                 <td><label class="text-white">Coupon Id</label></td>
-                <td><input type ="text" class="form-control input-sm" name="couponId" id ="couponId" placeholder="Enter coupon id"></td>
+                <td><input type ="text" class="form-control input-sm" name="couponId" id ="couponId" placeholder="Enter coupon id" required></td>
             </tr>
             <tr>
                 <td><label class="text-white">Amount</label></td>
-                <td><input type ="text" class="form-control input-sm" name="amount" id ="amount" placeholder="Enter Amount"></td>
+                <td><input type ="text" class="form-control input-sm" name="amount" id ="amount" placeholder="Enter Amount" required></td>
             </tr>
             <tr>
                 <td><label for="email" class="text-white">email</label></td>
-                <td><input type ="email" class="form-control input-sm" name="email" id ="email" placeholder="Enter your email id"></td>
+                <td><input type ="email" class="form-control input-sm" name="email" id ="email" placeholder="Enter your email id" required></td>
             </tr>
         </table>
         <br/>
 
         <td><input type ="button" class="btn btn-primary" name = "coupon" id ="coupon" value = "Redeem Coupon" onclick ="useCoupon();"></td>
-
-
     </center>
 </div>
 <center>
     <br/>
-    <div id="result" style="background-color:white"></div>
+    <div id="result" name ="result"></div>
     <br/>
     <input type ="button" class="btn hide" name = "display" id ="display" value = "Refresh" onclick ="getCoupons();"/>
     <div id ="coupons">

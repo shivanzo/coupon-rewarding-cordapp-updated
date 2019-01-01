@@ -8,9 +8,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript">
-
-
-
          function getCoupons() {
              var xmlHttpReq = new XMLHttpRequest();
              xmlHttpReq.onreadystatechange = function() {
@@ -22,8 +19,7 @@
              xmlHttpReq.send();
          }
 
-
-          function useCoupon() {
+          function approveCoupon() {
               var port = getPortNumber();
               getCoupons();
               if(port == 10012)
@@ -64,40 +60,33 @@
           }
       </script>
     <style>
-
-        div#outputmessage {
-            color:Black;
-            font-size: 15px;
-        }
-
-        table#output {
-            border-collapse: collapse;
-            border: 1px solid grey;
-        }
-
+         div#outputmessage {
+         color:Black;
+         font-size: 15px;
+         }
+         table#output {
+         border-collapse: collapse;
+         border: 1px solid grey;
+         }
          body {
          background-color: white;
          }
-
          label {
-            color :black;
-
+         color :black;
          }
-
          table, th, td {
          border-collapse: collapse;
          border: 1px solid #279aff;
          background-color : #279aff;
-
          }
          th, td {
          padding: 15px;
          text-align: left;
          }
          h1 {
-            font-size : 36px;
-            font-family : fantasy;
-            color: black;
+         font-size : 36px;
+         font-family : fantasy;
+         color: black;
          }
          h5 {
          color: #CB3C3C;
@@ -109,30 +98,24 @@
 <center>
     <h1>Amazon Approval ADMIN</h1>
     <h5>Payments now made simpler</h5>
-
     <img src="Amazonpay.png" alt="amazonpay" width="100" height="29">
-
     <br/>
     <br/>
     <table>
         <tr>
-            <!--<td>Enter Amount</td>-->
             <td><label class="text-white">Coupon Id</label></td>
-            <td><input type ="text" class="form-control input-sm" name="couponId" id ="couponId" placeholder="Enter coupon id"></td>
+            <td><input type ="text" class="form-control input-sm" name="couponId" id ="couponId" placeholder="Enter coupon id" required></td>
         </tr>
     </table>
     <br/>
-    <td><input type ="button" class="btn btn-primary" name = "coupon" id ="coupon" value = "Approve" onclick ="useCoupon();"></td>
+    <td><input type ="button" class="btn btn-primary" name = "coupon" id ="coupon" value = "Approve" onclick ="approveCoupon();"></td>
 </center>
-
 <br/>
 <br/>
-
 <center>
     <div id ="coupons" name ="coupons"> </div>
     <br/>
     <div id="outputmessage" name="outputmessage"> </div>
 </center>
-
 </body>
 </html>
