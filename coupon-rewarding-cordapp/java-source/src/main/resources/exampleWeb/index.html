@@ -68,7 +68,7 @@
                 document.getElementById("party").style.borderColor = "grey";
                 document.getElementById("username").style.borderColor = "grey";
 
-                document.getElementById('loader').visible = true;
+                document.getElementById('loader').style.visibility = 'visible';
 
                 var port = getPortNumber();
                 xmlHttpReq = new XMLHttpRequest();
@@ -95,7 +95,7 @@
          document.getElementById("result").innerHTML = xmlHttpReq.responseText;
          getCoupons();
           $('#refresh').removeClass('hide');
-          document.getElementById('loader').visible = false;
+          document.getElementById('loader').style.visibility  = "hidden";
 
          }
 
@@ -149,7 +149,7 @@
 
 </head>
 <body>
-<form id="myForm" name="myForm" onsubmit="return validateForm()">
+<form id="myForm" name="myForm">
 <center>
     <h1>Company Awards System</h1>
     <h5>eMee awards 2019</h5>

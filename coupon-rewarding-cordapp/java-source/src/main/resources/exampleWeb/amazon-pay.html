@@ -17,30 +17,64 @@
                  }
              };
             xmlHttpReq.open("GET", "http://localhost:10012/api/rewards/vault-data/", true);
-             xmlHttpReq.send();
+            xmlHttpReq.send();
          }
-
 
           function useCoupon() {
               var port = getPortNumber();
 
               if(port == 10012)
               {
-                xmlHttpReq = new XMLHttpRequest();
-                xmlHttpReq.open("POST", "http://localhost:10012/api/rewards/coupon-redemption/", true);
-                xmlHttpReq.onreadystatechange = displayResponse;
-                xmlHttpReq.setRequestHeader("Content-Type", "application/json");
-                var couponId = document.getElementById("couponId").value;
-                var amount = document.getElementById("amount").value;
-                var username = document.getElementById("email").value;
-                var data = JSON.stringify({"couponId": couponId, "userName": username, "value": amount});
-                xmlHttpReq.send(data);
+
+                var isValid = true;
+
+                if(document.getElementById("couponId").value == "")
+                {
+                    alert("couponId is required");
+                    isValid = false;
+                    document.getElementById("couponId").style.borderColor = "red";
+                }
+                if(document.getElementById("amount").value == "") {
+                    alert("amount is required");
+                    isValid = false;
+                    document.getElementById("amount").style.borderColor = "red";
+                }
+                if(document.getElementById("email").value == "") {
+                    alert("email id is required");
+                    isValid = false;
+                    document.getElementById("email").style.borderColor = "red";
+                }
+
+                if(isValid)
+                {
+
+                    document.getElementById("couponId").style.borderColor = "grey";
+                    document.getElementById("amount").style.borderColor = "grey";
+                    document.getElementById("email").style.borderColor = "grey";
+
+                    document.getElementById('loader').style.visibility = 'visible';
+
+                    xmlHttpReq = new XMLHttpRequest();
+                    xmlHttpReq.open("POST", "http://localhost:10012/api/rewards/coupon-redemption/", true);
+                    xmlHttpReq.onreadystatechange = displayResponse;
+                    xmlHttpReq.setRequestHeader("Content-Type", "application/json");
+                    var couponId = document.getElementById("couponId").value;
+                    var amount = document.getElementById("amount").value;
+                    var username = document.getElementById("email").value;
+                    var data = JSON.stringify({"couponId": couponId, "userName": username, "value": amount});
+                    xmlHttpReq.send(data);
+                }
+                else
+                {
+                    alert('Please fill the mandatory field data');
+                }
               }
+
               else
               {
                 alert('Invalid port number');
               }
-          }
+           }
 
           function displayResponse() {
             if(xmlHttpReq.readyState == 4  )
@@ -48,6 +82,7 @@
                alert(xmlHttpReq.responseText);
                document.getElementById("outputmessage").innerHTML = xmlHttpReq.responseText;
                getCoupons();
+               document.getElementById('loader').style.visibility  = "hidden";
             }
           }
 
@@ -104,6 +139,7 @@
       </style>
 </head>
 <body>
+    <form id="myForm" name="myForm">
     <center>
         <h1>AmazonPay India</h1>
         <h5>Payments now made simpler</h5>
@@ -129,9 +165,12 @@
         <br/>
         <td><input type ="button" class="btn btn-primary" name = "coupon" id ="coupon" value = "Redeem Coupon" onclick ="useCoupon();"></td>
     </center>
-
-    <br/>
-    <br/>
+    </form>
+    <center>
+        <div id ="loader" style="visibility : hidden">
+            <img src="loadingimage.gif" alt="Smiley face" height="60" width="62">
+        </div>
+    </center>
 
     <center>
         <div id="outputmessage" name="outputmessage"> </div>

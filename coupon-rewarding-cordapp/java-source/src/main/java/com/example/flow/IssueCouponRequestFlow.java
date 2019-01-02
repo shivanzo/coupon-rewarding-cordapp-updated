@@ -13,10 +13,13 @@ import net.corda.core.identity.Party;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static net.corda.core.contracts.ContractsDSL.requireThat;
 
 public class IssueCouponRequestFlow {
+
 
     @InitiatingFlow
     @StartableByRPC
@@ -76,40 +79,30 @@ public class IssueCouponRequestFlow {
             this.couponName = couponName;
         }
 
-        private final ProgressTracker.Step COUPON_GENERATION = new ProgressTracker.Step("Coupon is generated upon the purchased of medicine");
-        private final ProgressTracker.Step VERIFYING_COUPON = new ProgressTracker.Step("Verification of coupon once user tries to redeem it on amazon.");
-        private final ProgressTracker.Step SIGNING_TRANSACTION = new ProgressTracker.Step("Signing transaction with our private key.");
-        private final ProgressTracker.Step GATHERING_SIGS = new ProgressTracker.Step("Gathering the counterparty's signature.") {
-            public ProgressTracker childProgressTracker() {
-                return CollectSignaturesFlow.Companion.tracker();
-            }
-        };
-
-        private final ProgressTracker.Step FINALISING_TRANSACTION = new ProgressTracker.Step("Obtaining notary signature and recording transaction.") {
-            public ProgressTracker childProgressTracker() {
-                return FinalityFlow.Companion.tracker();
-            }
-        };
-
-        private final ProgressTracker progressTracker = new ProgressTracker(
-                COUPON_GENERATION,
-                VERIFYING_COUPON,
-                SIGNING_TRANSACTION,
-                GATHERING_SIGS,
-                FINALISING_TRANSACTION
-        );
-
         @Override
         @Suspendable
         public SignedTransaction call() throws FlowException {
 
+            getStateMachine().getLogger().info("Shivan Sawant");
+            getStateMachine().getLogger().info("Start of flow  : CouponIssueFlow");
+
+            getStateMachine().getLogger().info("Selecting notary from available NetworkMapCache  : CouponIssueFlow");
+
             final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
 
-            progressTracker.setCurrentStep(COUPON_GENERATION);
+            getStateMachine().getLogger().info("Notary selected from networkMapCache " + notary);
+
+           /* progressTracker.setCurrentStep(COUPON_GENERATION);*/
+
+            getStateMachine().getLogger().info("COUPON GENERATION");
 
             //Generate an unsigned transaction
             Party couponIssuerParty = getServiceHub().getMyInfo().getLegalIdentities().get(0);
+
+            getStateMachine().getLogger().info("Getting CouponIssuerParty : " + couponIssuerParty);
+
             CouponState couponState = new CouponState(couponIssuerParty, couponVendorParty, amount, new UniqueIdentifier(), false, false, userName, couponName);
+
             final Command<CouponContract.Commands.CouponGeneration> couponGenerationCommand = new Command<CouponContract.Commands.CouponGeneration>(new CouponContract.Commands.CouponGeneration(), ImmutableList.of(couponState.getInitiatingParty().getOwningKey(), couponState.getCounterParty().getOwningKey()));
 
             final TransactionBuilder txBuilder = new TransactionBuilder(notary)
@@ -118,21 +111,32 @@ public class IssueCouponRequestFlow {
 
             txBuilder.verify(getServiceHub());
 
-            progressTracker.setCurrentStep(SIGNING_TRANSACTION);
+            /*progressTracker.setCurrentStep(SIGNING_TRANSACTION);*/
+            getStateMachine().getLogger().info("SIGNING_TRANSACTION");
 
             // Sign the transaction.
             final SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
 
             //Stage 4
-            progressTracker.setCurrentStep(GATHERING_SIGS);
+            /*progressTracker.setCurrentStep(GATHERING_SIGS);*/
+
+            getStateMachine().getLogger().info("GATHERING SIGNATURES FROM BOTH PARTIES");
 
             // Send the state to the counterparty, and receive it back with their signature.
             FlowSession otherPartySession = initiateFlow(couponVendorParty);
+
             final SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, ImmutableSet.of(otherPartySession), CollectSignaturesFlow.Companion.tracker()));
             //stage 5
-            progressTracker.setCurrentStep(FINALISING_TRANSACTION);
+
+            getStateMachine().getLogger().info("FINALISING TRANSACTION  : " + fullySignedTx);
+            /*progressTracker.setCurrentStep(FINALISING_TRANSACTION);*/
+
+            getStateMachine().getLogger().info("FINALISING_TRANSACTION :");
+
+            getStateMachine().getLogger().info("Notorize and record transaction in both party vaults");
             //Notarise and record the transaction in both party vaults.
             return subFlow(new FinalityFlow(fullySignedTx));
+
         }
     }
 

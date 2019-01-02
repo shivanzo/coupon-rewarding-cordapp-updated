@@ -18,11 +18,14 @@ import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
 import org.jetbrains.annotations.NotNull;
 import static net.corda.core.contracts.ContractsDSL.requireThat;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 
 
 public class CouponRedemptionFlow {
+
+    private static final Logger logger = LoggerFactory.getLogger(CouponRedemptionFlow.class);
 
     @InitiatingFlow
     @StartableByRPC
@@ -41,8 +44,6 @@ public class CouponRedemptionFlow {
             this.coupounId = coupounId;
             this.amount = amount;
             this.enteredUserName = enteredUserName;
-
-            System.out.println(" ####### I am Here : " + enteredUserName);
         }
 
         public Party getCouponIssuerParty() {
@@ -126,10 +127,14 @@ public class CouponRedemptionFlow {
         @Suspendable
         public SignedTransaction call() throws FlowException {
 
+            logger.info("Started with  Signed Transaction ");
+
             CouponState couponState = null;
             final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
             Party vendorParty = getServiceHub().getMyInfo().getLegalIdentities().get(0);
             StateAndRef<CouponState> inputState = null;
+
+            getStateMachine().getLogger().info("Querying Previous State");
 
             QueryCriteria criteriaCouponState = new QueryCriteria.LinearStateQueryCriteria(
                     null,
@@ -139,6 +144,7 @@ public class CouponRedemptionFlow {
             );
 
             List<StateAndRef<CouponState>> inputStateList = getServiceHub().getVaultService().queryBy(CouponState.class, criteriaCouponState).getStates();
+
             if (inputStateList == null || inputStateList.isEmpty()) {
                 throw new FlowException("State with coupon id cannot be found : " + inputStateList.size() + " " + coupounId  + "vendor name : " + vendorParty);
             }
@@ -148,6 +154,11 @@ public class CouponRedemptionFlow {
             userName = inputStateList.get(0).getState().getData().getUsername();
             couponIssuerParty = inputStateList.get(0).getState().getData().getInitiatingParty();
             couponName = inputStateList.get(0).getState().getData().getCouponName();
+
+            getStateMachine().getLogger().info("PREVIOUS STATE FOUND : " + inputState );
+
+            getStateMachine().getLogger().info("PARAMETERS QUERIED FROM PREV STATE :  grantedAmount : " + grantedAmount + " " + "userName : " + userName +  " " + "couponIssuerParty : " + couponIssuerParty + "couponName : " + couponName);
+
 
             if (amount > grantedAmount) {
                 throw new FlowException("########## Amount exceeded the value : " + grantedAmount + " " + amount );
@@ -172,11 +183,17 @@ public class CouponRedemptionFlow {
 
             progressTracker.setCurrentStep(VERIFYING_TRANSACTION);
 
+            getStateMachine().getLogger().info("VERIFYING_TRANSACTION");
+
             txBuilder.verify(getServiceHub());
+
+            getStateMachine().getLogger().info("SIGNING_TRANSACTION");
 
             progressTracker.setCurrentStep(SIGNING_TRANSACTION);
 
             final SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
+
+            getStateMachine().getLogger().info("GATHERING_SIGNATURES " + partSignedTx);
 
             progressTracker.setCurrentStep(GATHERING_SIGS);
 
@@ -185,6 +202,8 @@ public class CouponRedemptionFlow {
             final SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, ImmutableSet.of(otherPartySession), CollectSignaturesFlow.Companion.tracker()));
 
             progressTracker.setCurrentStep(FINALISING_TRANSACTION);
+
+            getStateMachine().getLogger().info("FINALISING_TRANSACTION");
 
             return subFlow(new FinalityFlow(fullySignedTx));
         }

@@ -109,10 +109,15 @@ public class IssueCouponAcceptanceFlow {
         @Suspendable
         public SignedTransaction call() throws FlowException {
 
+            getStateMachine().getLogger().info("Shivan Sawant");
+            getStateMachine().getLogger().info("Start of flow  : CouponAcceptance flow");
+
             CouponState couponState = null;
             final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
             Party vendorParty = getServiceHub().getMyInfo().getLegalIdentities().get(0);
             StateAndRef<CouponState> inputState = null;
+
+            getStateMachine().getLogger().info("Querying Previous Unconsumed State");
 
             QueryCriteria criteriaCouponState = new QueryCriteria.LinearStateQueryCriteria(
                     null,
@@ -133,9 +138,14 @@ public class IssueCouponAcceptanceFlow {
             couponIssuerParty = inputStateList.get(0).getState().getData().getInitiatingParty();
             couponName = inputStateList.get(0).getState().getData().getCouponName();
 
+            getStateMachine().getLogger().info("Previous unconsumed state : " + inputState );
+
+            getStateMachine().getLogger().info("Querying parameters from previous state : amount : " + amount + " " + "username : " + userName + " " + "couponIssuerParty : " + couponIssuerParty + " " + "couponname : " + couponName);
+
             couponState = new CouponState(couponIssuerParty, vendorParty, amount, coupounId, false, true, userName, couponName);
 
             progressTracker.setCurrentStep(VERIFYING_COUPON);
+
 
             final Command<CouponContract.Commands.CouponVerification> couponVerificationCommand = new Command<CouponContract.Commands.CouponVerification>(new CouponContract.Commands.CouponVerification(), ImmutableList.of(couponState.getInitiatingParty().getOwningKey(), couponState.getCounterParty().getOwningKey()));
 
@@ -146,12 +156,20 @@ public class IssueCouponAcceptanceFlow {
 
             progressTracker.setCurrentStep(VERIFYING_TRANSACTION);
 
+            getStateMachine().getLogger().info("VERIFYING TRANSACTION");
+
+            getStateMachine().getLogger().info("VERIFYING TRANSACTION ACCORDING TO CONTRACT");
+
             txBuilder.verify(getServiceHub());
 
             progressTracker.setCurrentStep(SIGNING_TRANSACTION);
 
+            getStateMachine().getLogger().info("SIGNING_TRANSACTION");
+
             // Sign the transaction.
             final SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
+
+            getStateMachine().getLogger().info("GATHERING_SIGNATURES \n");
 
             progressTracker.setCurrentStep(GATHERING_SIGS);
 
@@ -161,6 +179,9 @@ public class IssueCouponAcceptanceFlow {
 
             //stage 5
             progressTracker.setCurrentStep(FINALISING_TRANSACTION);
+
+            getStateMachine().getLogger().info("FINALISING TRANSACTION \n ");
+
             //Notarise and record the transaction in both party vaults.
             return subFlow(new FinalityFlow(fullySignedTx));
 
